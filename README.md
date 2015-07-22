@@ -8,6 +8,9 @@
    - Для Firefox: дополнение [Scriptish](http://scriptish.org/) (или [GreaseMonkey](http://www.greasespot.net/))
    - Для Chrome: дополнение [TamperMonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?hl=ru)
 
+Убедитесь, что у вас установлен [VkOpt](http://vkopt.net)<br>
+После этого переходите по ссылке [https://raw.githubusercontent.com/Pmmlabs/snapster/master/snapster.user.js](https://raw.githubusercontent.com/Pmmlabs/snapster/master/snapster.user.js) и нажимайте Install
+
 ## Задействованные методы API
 
    - `chronicle.getExplore`
