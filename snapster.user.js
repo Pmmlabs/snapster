@@ -7,6 +7,7 @@
 // @description    Плагин для VkOpt, добавляющий на сайт ВКонтакте веб-клиент Snapster
 // @include        *vk.com*
 // @run-at         document-end
+// @grant none
 // ==/UserScript==
 
 if (!window.vkopt_plugins) vkopt_plugins={};
@@ -31,7 +32,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                 else
                     original_popstate();
             });
-            this.onLocation(nav.objLoc)
+            //this.onLocation(nav.objLoc)
         },                        // При подключении плагина к Вкопту
         onLocation:       function(nav_obj){
             if (nav_obj[0]=='feed' && nav_obj.section=='snapster')
