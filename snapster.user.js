@@ -32,6 +32,9 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                 else
                     original_popstate();
             });
+            // Подгрузка записей при скролле
+            show('show_more_link');
+            Inj.Start('Feed.showMore','if (cur.section=="snapster") return vkopt_plugins["'+PLUGIN_ID+'"].showMore();');
             //this.onLocation(nav.objLoc)
         },
         onLocation:       function(nav_obj){
@@ -92,13 +95,9 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                         '<a href="/photo{photo_id4}" onclick="return showPhoto(\'{photo_id4}\', \'photos{owner_id}\', {}, event);" class="page_post_thumb_wrap quadro-photo fl_l"><img src="{src_big4}" width="'+PEOPLE_PHOTO_SIZE+'" class="page_post_thumb_sized_photo"></a>'+
                     '</div>'+
                 '</div>'+
-                //'<div class="replies">'+
-                //    '<div class="reply_link_wrap sm">'+
-                //        '<small class="feed_photos_num"><span class="rel_date">{date}</span>, фотография из </small><a href="/album{owner_id}_{aid}">альбома</a>'+
-                //    '</div>'+
-                //'</div>'+
             '</div>'+
         '</div>',
+        next_from:0,
         // ФУНКЦИИ
         UI: function(subsection,hashtag) {
             if (isVisible(ge('feed_empty'))) {  // делать интерфейс только если его еще нет, т.е. надпись "новостей нет" все еще видна.
@@ -134,6 +133,11 @@ if (!window.vkopt_plugins) vkopt_plugins={};
         like: function(photo_id){
             console.log(photo_id);  // TODO: поставить лайк через API
         },
+        showMore: function(){
+            if (cur.isFeedLoading) return;
+            cur.isFeedLoading = true;
+            this.switchSection(nav.objLoc.sub,nav.objLoc.hashtag,this.next_from);
+        },
         processHashtags: function (text) {
             if (window.Emoji && Emoji.emojiToHTML)
                 text = Emoji.emojiToHTML(text,true) || text;
@@ -141,36 +145,31 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                 .replace(/(#[\wа-яА-Я]+)/g,'<a href="feed?section=snapster&sub=hashtags&hashtag=$1" ' +
                 'onclick="return vkopt_plugins[\'' + PLUGIN_ID + '\'].switchSection(\'hashtags\',\'$1\');">$1</a>');
         },
-        switchSection: function(section, hashtag) {
+        switchSection: function(section, hashtag, next_from) {
             if (!ge('feed_rows')) location.reload();    // случай нажатия "назад" не с новостей
             show('feed_progress');
-            ge('feed_rows').innerHTML = '';
-            removeClass(geByClass('summary_tab_sel')[0], 'summary_tab_sel');
-            addClass('snapster_'+section, 'summary_tab_sel');
+            cur.isFeedLoading = true;
+            if (!next_from) {
+                ge('feed_rows').innerHTML = '';
+                removeClass(geByClass('summary_tab_sel')[0], 'summary_tab_sel');    // переключение активной вкладки
+                addClass('snapster_' + section, 'summary_tab_sel');
+            }
             var postTemplate = this.postTemplate;
             var peopleTemplate = this.peopleTemplate;
             var fields = 'name,screen_name,photo_50,friend_status,verified';
             switch (section) {
-                case 'recommended':
-                case 'popular_country':
-                    dApi.call('chronicle.getExploreSection', {
-                        'section': section,
-                        'count': 20,
-                        'start_from': 0,
-                        'fields': fields
-                    }, vkopt_plugins[PLUGIN_ID].renderPosts);
-                    break;
                 case 'hashtags':
                     if (hashtag) {
                         dApi.call('chronicle.getExploreSection', {
                             'section': 'hashtag',
                             'count': 30,
+                            'start_from': next_from || 0,
                             //'title': title,
                             'fields': fields,
                             'hashtag': hashtag
                         }, vkopt_plugins[PLUGIN_ID].renderPosts);
                     } else {
-                        for (var i = 0; i < this.hashtags.length; i++) {
+                        if (!next_from) for (var i = 0; i < this.hashtags.length; i++) {
                             var photo = this.hashtags[i].photo.top_photo;
                             var oid = photo.split('_')[0];
                             var pid = photo.split('_')[1];
@@ -196,15 +195,18 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                             ));
                         }
                         hide('feed_progress');
+                        cur.isFeedLoading = false;
                     }
                     break;
                 case 'people':
                     dApi.call('chronicle.getExploreSection', {
                         'section': section,
+                        'start_from': next_from || 0,
                         //'count': count,
                         'fields': 'name,photo_50,friend_status,verified'
                     }, function (r, response) {
-                        // Рендер постов
+                        vkopt_plugins[PLUGIN_ID].next_from = response.next_from || 0;
+                        // Рендер постов-людей
                         for (var i = 0; i < response.items.length; i++) {
                             var item = response.items[i];
                             ge('feed_rows').appendChild(vkCe('div', {'class': 'feed_row'}, peopleTemplate
@@ -226,14 +228,17 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                             ));
                         }
                         hide('feed_progress');
+                        cur.isFeedLoading = false;
                     });
                     break;
                 case 'people_list':
                     dApi.call('chronicle.getExploreSection', {
                         'section': section,
+                        'start_from': next_from || 0,
                         //'count': 12,
                         'fields': fields+',photo_100,photo_200,photo_400_orig,sex,status,photo_id'
                     }, function (r, response) {
+                        vkopt_plugins[PLUGIN_ID].next_from = response.next_from || 0;
                          //Рендер постов-людей
                         for (var i = 0; i < response.profiles.length; i++) {
                             var item = response.profiles[i];
@@ -257,14 +262,24 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                             ));
                         }
                         hide('feed_progress');
+                        cur.isFeedLoading = false;
                     });
+                    break;
+                default : //    'recommended', 'popular_country', other...
+                    dApi.call('chronicle.getExploreSection', {
+                        'section': section,
+                        'count': 20,
+                        'start_from': next_from || 0,
+                        'fields': fields
+                    }, vkopt_plugins[PLUGIN_ID].renderPosts);
                     break;
             }
             nav.setLoc({'0':'feed','section':'snapster','sub':section,'hashtag':hashtag});
             document.title = 'Snapster - '+section+(hashtag ? ' - '+hashtag : '');
             return false;
         },
-        renderPosts: function (r, response) {   // Рендеринг постов в категориях "Популярное" и "Конкретный хештег"
+        renderPosts: function (r, response) {   // Рендеринг постов в категориях "Популярное", "Рекомендации" и "Конкретный хештег"
+            vkopt_plugins[PLUGIN_ID].next_from = response.next_from || 0;
             // Более удобный объект с профилями
             var profiles = {};
             for (var i = 0; i < response.profiles.length; i++)
@@ -305,6 +320,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                 ));
             }
             hide('feed_progress');
+            cur.isFeedLoading = false;
         }
     };
     if (window.vkopt_ready) vkopt_plugin_run(PLUGIN_ID);
