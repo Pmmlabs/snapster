@@ -1,12 +1,15 @@
 # snapster.user.js
 Плагин для VkOpt, добавляющий на сайт ВКонтакте веб-клиент Snapster. Распространяется в виде юзер-скрипта.<br>
+В левое меню добавляется новый пункт "Snapster", который является ссылкой на https://vk.com/feed?section=snapster. При переходе по этому адресу на панели категорий новостей появляются кнопки "Популярное", "Популярные хэштеги", "Интересные люди", и т.д., а в ленту загружаются записи из категории "Популярное".
+
+Этот скрипт работает только при установленном расширении VkOpt, т.к. для авторизованного вызова API используются реализованные там функции.
 Домашняя страница на greasyfork: [https://greasyfork.org/ru/scripts/11120-snapster-plugin-for-vkopt](https://greasyfork.org/ru/scripts/11120-snapster-plugin-for-vkopt)
 
 Установка
 --
 Вам потребуется какое-нибудь средство запуска пользовательских скриптов (userscript), например:
-   - Для Firefox: дополнение [Scriptish](http://scriptish.org/) (или [GreaseMonkey](http://www.greasespot.net/))
-   - Для Chrome: дополнение [TamperMonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?hl=ru)
+   - Для Firefox: дополнение [GreaseMonkey](http://www.greasespot.net/) (или [Scriptish](http://scriptish.org/) - на последних версиях не работает)
+   - Для Chrome: дополнение [TamperMonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?hl=ru) (через установку без дополнения не работает)
 
 Убедитесь, что у вас установлен [VkOpt](http://vkopt.net)<br>
 После этого переходите по ссылке [https://raw.githubusercontent.com/Pmmlabs/snapster/master/snapster.user.js](https://raw.githubusercontent.com/Pmmlabs/snapster/master/snapster.user.js) и нажимайте Install
