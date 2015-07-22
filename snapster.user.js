@@ -32,8 +32,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                 else
                     original_popstate();
             });
-            // Подгрузка записей при скролле
-            show('show_more_link');
+            // Подгрузка записей при скролле            
             Inj.Start('Feed.showMore','if (cur.section=="snapster") return vkopt_plugins["'+PLUGIN_ID+'"].showMore();');
             //this.onLocation(nav.objLoc)
         },
@@ -99,7 +98,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
         '</div>',
         next_from:0,
         // ФУНКЦИИ
-        UI: function(subsection,hashtag) {
+        UI: function(subsection, hashtag) {
             if (isVisible(ge('feed_empty'))) {  // делать интерфейс только если его еще нет, т.е. надпись "новостей нет" все еще видна.
                 hide(ge('feed_empty'));
                 // Удаление шапки
@@ -133,12 +132,14 @@ if (!window.vkopt_plugins) vkopt_plugins={};
         like: function(photo_id){
             console.log(photo_id);  // TODO: поставить лайк через API
         },
-        showMore: function(){
+        showMore: function() {  // Подгрузка новых записей; замена для Feed.showMore
             if (cur.isFeedLoading) return;
             cur.isFeedLoading = true;
+            show('show_more_progress');
+            hide('show_more_link');
             this.switchSection(nav.objLoc.sub,nav.objLoc.hashtag,this.next_from);
         },
-        processHashtags: function (text) {
+        processHashtags: function (text) {  // На самом деле не только теги, а еще смайлики и обращения
             if (window.Emoji && Emoji.emojiToHTML)
                 text = Emoji.emojiToHTML(text,true) || text;
             return text.replace(/\[(id\d+)\|([^\]]+)\]/g,'<a href="/$1">$2</a>')
@@ -149,7 +150,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
             if (!ge('feed_rows')) location.reload();    // случай нажатия "назад" не с новостей
             show('feed_progress');
             cur.isFeedLoading = true;
-            if (!next_from) {
+            if (next_from===undefined) {
                 ge('feed_rows').innerHTML = '';
                 removeClass(geByClass('summary_tab_sel')[0], 'summary_tab_sel');    // переключение активной вкладки
                 addClass('snapster_' + section, 'summary_tab_sel');
@@ -168,7 +169,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                             'fields': fields,
                             'hashtag': hashtag
                         }, vkopt_plugins[PLUGIN_ID].renderPosts);
-                    } else {
+                    } else {    // Популярные хэштеги
                         if (!next_from) for (var i = 0; i < this.hashtags.length; i++) {
                             var photo = this.hashtags[i].photo.top_photo;
                             var oid = photo.split('_')[0];
@@ -194,8 +195,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                     .replace(/\{comments\}/g, '')
                             ));
                         }
-                        hide('feed_progress');
-                        cur.isFeedLoading = false;
+                        this.afterLoad('');
                     }
                     break;
                 case 'people':
@@ -205,7 +205,6 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                         //'count': count,
                         'fields': 'name,photo_50,friend_status,verified'
                     }, function (r, response) {
-                        vkopt_plugins[PLUGIN_ID].next_from = response.next_from || 0;
                         // Рендер постов-людей
                         for (var i = 0; i < response.items.length; i++) {
                             var item = response.items[i];
@@ -227,8 +226,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                     .replace(/\{verified\}/g, item.profile.verified ? '<span class="vk_profile_verified"></span>' : '')
                             ));
                         }
-                        hide('feed_progress');
-                        cur.isFeedLoading = false;
+                        vkopt_plugins[PLUGIN_ID].afterLoad(response.next_from);
                     });
                     break;
                 case 'people_list':
@@ -238,7 +236,6 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                         //'count': 12,
                         'fields': fields+',photo_100,photo_200,photo_400_orig,sex,status,photo_id'
                     }, function (r, response) {
-                        vkopt_plugins[PLUGIN_ID].next_from = response.next_from || 0;
                          //Рендер постов-людей
                         for (var i = 0; i < response.profiles.length; i++) {
                             var item = response.profiles[i];
@@ -261,8 +258,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                     .replace(/\{comments\}/g, '')
                             ));
                         }
-                        hide('feed_progress');
-                        cur.isFeedLoading = false;
+                        vkopt_plugins[PLUGIN_ID].afterLoad(response.next_from);
                     });
                     break;
                 default : //    'recommended', 'popular_country', other...
@@ -279,7 +275,6 @@ if (!window.vkopt_plugins) vkopt_plugins={};
             return false;
         },
         renderPosts: function (r, response) {   // Рендеринг постов в категориях "Популярное", "Рекомендации" и "Конкретный хештег"
-            vkopt_plugins[PLUGIN_ID].next_from = response.next_from || 0;
             // Более удобный объект с профилями
             var profiles = {};
             for (var i = 0; i < response.profiles.length; i++)
@@ -319,8 +314,21 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                         .replace(/\{comments\}/g, comments)
                 ));
             }
+            vkopt_plugins[PLUGIN_ID].afterLoad(response.next_from);
+        },
+        afterLoad: function(next_from) {
             hide('feed_progress');
+            hide('show_more_progress');
             cur.isFeedLoading = false;
+            if (next_from === '') {
+                hide('show_more_link');
+                show('all_shown');
+            } else {
+                if (next_from) this.next_from = next_from;
+                show('show_more_link');
+                hide('all_shown');
+            }
+            cur.idleManager.isIdle=false; // для правильной работы обработчика события scroll
         }
     };
     if (window.vkopt_ready) vkopt_plugin_run(PLUGIN_ID);
