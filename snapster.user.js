@@ -32,8 +32,9 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                 else
                     original_popstate();
             });
-            // Подгрузка записей при скролле            
-            Inj.Start('Feed.showMore','if (cur.section=="snapster") return vkopt_plugins["'+PLUGIN_ID+'"].showMore();');
+            // Подгрузка записей при скролле
+            if (cur.module=='feed')
+                Inj.Start('Feed.showMore','if (cur.section=="snapster") return vkopt_plugins["'+PLUGIN_ID+'"].showMore();');
             //this.onLocation(nav.objLoc)
         },
         onLocation:       function(nav_obj){
