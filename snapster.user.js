@@ -66,7 +66,6 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                         '<div class="post_share fl_r" onmouseover="wall.postShareOver(\'{photoLike_id}\')" onmouseout="wall.postShareOut(\'{photoLike_id}\', event)" onclick="vkopt_plugins[\''+PLUGIN_ID+'\'].share(\'{photo_id}\',\'{post_id}\'); event.cancelBubble = true;">'+
                             '<span class="post_share_link fl_l" id="share_link{photoLike_id}">Поделиться</span>'+
                             '<i class="post_share_icon sp_main fl_l" id="share_icon{photoLike_id}"></i>'+
-                            '</div>'+
                         '</div>'+
                     '</div>'+
                 '</div>'+
@@ -285,12 +284,26 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                 // Комменты
                 var comments = '';
                 if (item.comments) {
-                    comments = '<div class="clear">';
+                    comments = '<div class="clear"><div id="replies'+item.owner_id + '_' + item.pid+'">';
                     for (var j=item.comments.length-1;j>0;j--)
-                        comments+=dateFormat(item.comments[j].date * 1000, "[dd.mm.yy HH:MM]")+
-                            ' <a class="author" href="/'+profiles[item.comments[j].uid].screen_name+'" >'+profiles[item.comments[j].uid].first_name+' '+profiles[item.comments[j].uid].last_name+'</a>: '+
-                            vkopt_plugins[PLUGIN_ID].processHashtags(item.comments[j].text)+'<br/>';
-                    comments+='</div>';
+                        if (item.comments[j].text)
+                            comments+='<div class="reply" style="padding:3px">'+
+                                '<div class="reply_table">'+
+                                    '<a class="reply_image" href="/id'+profiles[item.comments[j].uid].screen_name+'" style="margin:3px">'+
+                                        '<img src="'+profiles[item.comments[j].uid].photo_50+'" class="reply_image" height="50" width="50">'+
+                                    '</a>'+
+                                    '<div class="reply_info">'+
+                                        '<div class="reply_text">'+
+                                            '<a class="author" href="/id'+profiles[item.comments[j].uid].screen_name+'">'+profiles[item.comments[j].uid].first_name+' '+profiles[item.comments[j].uid].last_name+'</a>'+
+                                                '<div class="wall_reply_text">'+vkopt_plugins[PLUGIN_ID].processHashtags(item.comments[j].text)+'</div>'+
+                                        '</div>'+
+                                        '<div class="info_footer sm">'+
+                                                dateFormat(item.comments[j].date * 1000, "dd.mm.yyyy HH:MM")+
+                                        '</div>'+
+                                    '</div>'+
+                                '</div>'+
+                            '</div>';
+                    comments+='</div></div>';
                 }
                 if (item) ge('feed_rows').appendChild(vkCe('div', {'class': 'feed_row'}, vkopt_plugins[PLUGIN_ID].postTemplate
                         .replace(/\{owner_id\}/g, item.owner_id)
@@ -310,7 +323,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                         .replace(/\{place\}/g, item.lat ? '<div class="media_desc">' +
                             '<a class="page_media_place clear_fix" href="feed?q=near%3A'+item.lat+'%2C'+item.long+'&section=photos_search" onclick="nav.go(this.href,event)">' +
                             '<span class="fl_l checkin_big"></span>' +
-                            '<div class="fl_l page_media_place_label">'+(item.place || '')+'<br/>'+item.lat+','+item.long+'</div></a></div>':'')
+                            '<div class="fl_l page_media_place_label" style="width:auto">'+(item.place || '')+'<br/>'+item.lat+','+item.long+'</div></a></div>':'')
                         .replace(/\{comments\}/g, comments)
                 ));
             }
