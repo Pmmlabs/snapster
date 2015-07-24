@@ -141,23 +141,23 @@ if (!window.vkopt_plugins) vkopt_plugins={};
             dApi.call('chronicle.getPreset', {
                 owner_id: oid,
                 photo_id: pid
-            }, function (r, response, error) {
-                box.hide();
-                var html;
-                if (error)
-                    html = 'Нет информации о фильтре<br>'+error.error_msg;
-                else
-                    html = '<table><tr><td>id:</td><td>'+response.id+'</td></tr>' +
-                    '<tr><td>Версия приложения:</td><td>'+response.data.app_version+'</td></tr>' +
-                    '<tr><td>Название:</td><td>'+response.data.name+'</td></tr>' +
-                    '<tr><td>Данные:<br><a id="snpstr_dt">(в консоль)</a></td><td style="max-height:200px;overflow-y:auto;display:block;">'+response.data.preset.toSource()+'</td></tr>' +
-                    '</table>';
-                box = vkAlertBox('Информация о фильтре '+photo_id, html);
-                if (!error)
+            }, {
+                ok: function (r, response) {
+                    box.hide();
+                    var html = '<table><tr><td>id:</td><td>'+response.id+'</td></tr>' +
+                        '<tr><td>Версия приложения:</td><td>'+response.data.app_version+'</td></tr>' +
+                        '<tr><td>Название:</td><td>'+response.data.name+'</td></tr>' +
+                        '<tr><td>Данные:<br><a id="snpstr_dt">(в консоль)</a></td><td style="max-height:200px;overflow-y:auto;display:block;">'+response.data.preset.toSource()+'</td></tr>' +
+                        '</table>';
+                    box = vkAlertBox('Информация о фильтре '+photo_id, html);
                     ge('snpstr_dt').onclick = function () {
                         console.log(response.data.preset);
                     }
-            })
+                }, error: function(r, error){
+                    box.hide();
+                    box = vkAlertBox('Информация о фильтре '+photo_id, 'Нет информации о фильтре<br><pre>'+error.error_msg+'</pre>');
+                }
+            });
         },
         showMore: function() {  // Подгрузка новых записей; замена для Feed.showMore
             if (cur.isFeedLoading) return;
