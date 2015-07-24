@@ -18,6 +18,7 @@
 
    - `chronicle.getExplore`
    - `chronicle.getExploreSection`
+   - `chronicle.getPreset`
    
 ## Скриншот
 
