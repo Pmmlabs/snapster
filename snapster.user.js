@@ -16,7 +16,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
     var PEOPLE_PHOTO_SIZE = 262; // Размер квадратных фоток-миниатюр в разделе "Люди"
     vkopt_plugins[PLUGIN_ID]={
         Name:             'Snapster web-client',
-        css: '.quadro-photo {width: '+PEOPLE_PHOTO_SIZE+'px; height: '+PEOPLE_PHOTO_SIZE+'px;}',
+        css: '.quadro-photo {width: '+PEOPLE_PHOTO_SIZE+'px; height: '+PEOPLE_PHOTO_SIZE+'px;} .hashtag {font-size:2em}',
         // СОБЫТИЯ
         init: function(){   // При подключении плагина к Вкопту
             // Добавление нового пункта меню в левое меню
@@ -59,10 +59,10 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                 '</div>'+
                 '<div class="post_full_like_wrap sm fl_r">'+
                     '<div class="post_full_like">'+
-                        '<div class="post_like fl_r has_dislike" onmouseover="wall.postLikeOver(\'{photoLike_id}\')" onmouseout="wall.postLikeOut(\'{photoLike_id}\')" onclick="vkopt_plugins[\''+PLUGIN_ID+'}\'].like(\'{photo_id}\'); event.cancelBubble = true;">'+
-                            '<span class="post_like_link fl_l" id="like_link{photoLike_id}">Мне нравится</span>'+
-                            '<i class="post_like_icon sp_main  fl_l {mylike}" id="like_icon{photoLike_id}"></i>'+
-                            '<span class="post_like_count fl_l" id="like_count{photoLike_id}">{likes}</span>'+
+                        '<div class="post_like fl_r" onmouseover="wall.postLikeOver(\'{photoLike_id}\')" onmouseout="wall.postLikeOut(\'{photoLike_id}\')" onclick="vk_skinman.like(\'{photo_id}\'); event.cancelBubble = true;">'+
+                            '<span class="post_like_link fl_l" id="like_link{photoLike_id}">Мне нравится</span><i id="like_icon{photoLike_id}"></i>'+
+                            '<i class="post_like_icon sp_main  fl_l {mylike}" id="s_like_icon{photo_id}"></i>'+
+                            '<span class="post_like_count fl_l" id="s_like_count{photo_id}">{likes}</span>'+
                         '</div>'+
                         '<div class="post_share fl_r" onmouseover="wall.postShareOver(\'{photoLike_id}\')" onmouseout="wall.postShareOut(\'{photoLike_id}\', event)" onclick="vkopt_plugins[\''+PLUGIN_ID+'\'].share(\'{photo_id}\',\'{post_id}\'); event.cancelBubble = true;">'+
                             '<span class="post_share_link fl_l" id="share_link{photoLike_id}">Поделиться</span>'+
@@ -129,9 +129,14 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                 to: 'mail'
             }, {stat: ['page.js', 'page.css', 'wide_dd.js', 'wide_dd.css', 'sharebox.js']});
         },
-        like: function(photo_id){
-            console.log(photo_id);  // TODO: поставить лайк через API
-        },
+        //like: function(photo_id){   // лайк через API, т.к. через сайт нужен хеш
+        //    var owner_id=photo_id.split('_')[0];
+        //    var pid=photo_id.split('_')[1];
+        //    dApi.call('likes.add',{type})
+        //    var container = ge('like_count'+owner_id+'_photo'+pid)
+        //    container.innerHTML = intval(container.innerHTML)+1;
+        //    console.log(photo_id);  // TODO: поставить лайк через API
+        //},
         showMore: function() {  // Подгрузка новых записей; замена для Feed.showMore
             if (cur.isFeedLoading) return;
             cur.isFeedLoading = true;
@@ -180,14 +185,14 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                     .replace(/\{photo_id\}/g, photo)
                                     .replace(/\{photoLike_id\}/g, oid + '_photo' + pid)
                                     .replace(/\{src_big\}/g, this.hashtags[i].photo.src)
-                                    .replace(/\{name_link\}/g, '<a class="author" href="feed?section=snapster&sub=hashtags&hashtag=' + this.hashtags[i].hashtag +
+                                    .replace(/\{name_link\}/g, '<a class="hashtag" href="feed?section=snapster&sub=hashtags&hashtag=' + this.hashtags[i].hashtag +
                                         '" onclick="return vkopt_plugins[\'' + PLUGIN_ID + '\'].switchSection(\'hashtags\',\'' + this.hashtags[i].hashtag +
                                         '\');">' + this.hashtags[i].hashtag + '</a>')
                                     .replace(/\{date\}/g, '')
                                     .replace(/\{aid\}/g, 0)
                                     .replace(/\{likes\}/g, '')
                                     .replace(/\{mylike\}/g, '')
-                                    .replace(/\{avatar\}/g, '/images/no_photo.png') // В качестве аватара картинка с фотоаппаратом. Лучше бы найти картинку с решеткой.
+                                    .replace(/\{avatar\}/g, '/images/chronicle/icon_'+(i % 5 + 1)+'.png') // В качестве аватара - картинка из набора иконок snapster
                                     .replace(/\{verified\}/g, '')
                                     .replace(/\{text\}/g, '')
                                     .replace(/\{friend_status\}/g, '')
@@ -270,8 +275,8 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                     }, vkopt_plugins[PLUGIN_ID].renderPosts);
                     break;
             }
-            nav.setLoc({'0':'feed','section':'snapster','sub':section,'hashtag':hashtag});
             document.title = 'Snapster - '+section+(hashtag ? ' - '+hashtag : '');
+            nav.setLoc({'0':'feed','section':'snapster','sub':section,'hashtag':hashtag});
             return false;
         },
         renderPosts: function (r, response) {   // Рендеринг постов в категориях "Популярное", "Рекомендации" и "Конкретный хештег"
@@ -295,7 +300,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                     '</a>'+
                                     '<div class="reply_info">'+
                                         '<div class="reply_text">'+
-                                            '<a class="author" href="/id'+profiles[item.comments[j].uid].screen_name+'">'+profiles[item.comments[j].uid].first_name+' '+profiles[item.comments[j].uid].last_name+'</a>'+
+                                            '<a class="author" href="/'+profiles[item.comments[j].uid].screen_name+'">'+profiles[item.comments[j].uid].first_name+' '+profiles[item.comments[j].uid].last_name+'</a>'+
                                                 '<div class="wall_reply_text">'+vkopt_plugins[PLUGIN_ID].processHashtags(item.comments[j].text)+'</div>'+
                                         '</div>'+
                                         '<div class="info_footer sm">'+
@@ -322,7 +327,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                         .replace(/\{friend_status\}/g, profiles[item.owner_id].friend_status ? '<span class="explain">(в друзьях) '+profiles[item.owner_id].friend_status+' </span>' : '')
                         .replace(/\{verified\}/g, profiles[item.owner_id].verified ? '<span class="vk_profile_verified"></span>' : '')
                         .replace(/\{place\}/g, item.lat ? '<div class="media_desc">' +
-                            '<a class="page_media_place clear_fix" href="feed?q=near%3A'+item.lat+'%2C'+item.long+'&section=photos_search" onclick="nav.go(this.href,event)">' +
+                            '<a class="page_media_place clear_fix" href="feed?q=near%3A'+item.lat+'%2C'+item.long+'&section=photos_search" onclick="nav.go(this.href,event)" title="Искать фотографии рядом">' +
                             '<span class="fl_l checkin_big"></span>' +
                             '<div class="fl_l page_media_place_label" style="width:auto">'+(item.place || '')+'<br/>'+item.lat+','+item.long+'</div></a></div>':'')
                         .replace(/\{comments\}/g, comments)
