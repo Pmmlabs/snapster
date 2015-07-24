@@ -7,6 +7,9 @@
 // @description    Плагин для VkOpt, добавляющий на сайт ВКонтакте веб-клиент Snapster
 // @include        *vk.com*
 // @run-at         document-end
+// @downloadURL    https://raw.githubusercontent.com/Pmmlabs/snapster/master/snapster.user.js
+// @icon           http://vk.com/images/chronicle/logotype.png
+// @noframes
 // @grant none
 // ==/UserScript==
 
