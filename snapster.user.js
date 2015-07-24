@@ -77,7 +77,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                     '<div class="reply_link_wrap sm">'+
                         '<small class="feed_photos_num"><span class="rel_date">{date}</span></small>' +
                         ' | <a onclick="return nav.change({z: \'album{owner_id}_{aid}\'}, event);"  href="/album{owner_id}_{aid}">Альбом</a>'+
-                        ' | <a onclick="vkopt_plugins[\''+PLUGIN_ID+'\'].filterInfo(\'{photo_id}\');">О фильтре</a>'+
+                        '{filter}'+
                     '</div>{comments}'+
                 '</div>'+
             '</div>'+
@@ -134,10 +134,8 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                 to: 'mail'
             }, {stat: ['page.js', 'page.css', 'wide_dd.js', 'wide_dd.css', 'sharebox.js']});
         },
-        filterInfo: function (photo_id) {
+        filterInfo: function (oid, pid) {
             var box=vkAlertBox('',vkBigLdrImg);
-            var oid = photo_id.split('_')[0];
-            var pid = photo_id.split('_')[1];
             dApi.call('chronicle.getPreset', {
                 owner_id: oid,
                 photo_id: pid
@@ -149,7 +147,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                         '<tr><td>Название:</td><td>'+response.data.name+'</td></tr>' +
                         '<tr><td>Данные:<br><a id="snpstr_dt">(в консоль)</a></td><td style="max-height:200px;overflow-y:auto;display:block;">'+response.data.preset.toSource()+'</td></tr>' +
                         '</table>';
-                    box = vkAlertBox('Информация о фильтре '+photo_id, html);
+                    box = vkAlertBox('Информация о фильтре '+oid+'_'+pid, html);
                     ge('snpstr_dt').onclick = function () {
                         console.log(response.data.preset);
                     }
@@ -176,6 +174,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
         createNode: function(template, params){
             for (var i in params)
                 template = template.replace(new RegExp('\{'+i+'\}','g'),params[i]);
+            template = template.replace(/\{\w+\}/g,'');
             ge('feed_rows').appendChild(vkCe('div', {'class': 'feed_row'}, template));
         },
         switchSection: function(section, hashtag, next_from) {
@@ -215,16 +214,8 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                 name_link: '<a class="hashtag" href="feed?section=snapster&sub=hashtags&hashtag=' + this.hashtags[i].hashtag +
                                         '" onclick="return vkopt_plugins[\'' + PLUGIN_ID + '\'].switchSection(\'hashtags\',\'' + this.hashtags[i].hashtag +
                                         '\');">' + this.hashtags[i].hashtag + '</a>',
-                                date: '',
                                 aid: 0,
-                                likes: '',
-                                mylike: '',
-                                avatar: '/images/chronicle/icon_' + (i % 5 + 1) + '.png', // В качестве аватара - картинка из набора иконок snapster
-                                verified: '',
-                                text: '',
-                                friend_status: '',
-                                place: '',
-                                comments: ''
+                                avatar: '/images/chronicle/icon_' + (i % 5 + 1) + '.png' // В качестве аватара - картинка из набора иконок snapster
                             });
                         }
                         this.afterLoad('');
@@ -279,15 +270,10 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                     text: vkopt_plugins[PLUGIN_ID].processHashtags(item.status),
                                     src_big: item.photo_400_orig || item.photo_200 || item.photo_100 || item.photo_50,
                                     name_link: '<a class="author" href="/id'+item.uid+'">'+item.first_name+' '+item.last_name+'</a>',
-                                    date: '',
                                     aid: '0',
-                                    likes: '',
-                                    mylike: '',
                                     avatar: item.photo_50,
                                     friend_status: item.friend_status ? '<span class="explain">(в друзьях)</span>' : '',
                                     verified: item.verified ? '<span class="vk_profile_verified"></span>' : '',
-                                    place: '',
-                                    comments: ''
                             });
                         }
                         vkopt_plugins[PLUGIN_ID].afterLoad(response.next_from);
@@ -356,7 +342,8 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                         '<a class="page_media_place clear_fix" href="feed?q=near%3A' + item.lat + '%2C' + item.long + '&section=photos_search" onclick="nav.go(this.href,event)" title="Искать фотографии рядом">' +
                         '<span class="fl_l checkin_big"></span>' +
                         '<div class="fl_l page_media_place_label" style="width:auto">' + (item.place || '') + '<br/>' + item.lat + ',' + item.long + '</div></a></div>' : '',
-                    comments: comments
+                    comments: comments,
+                    filter: item.has_filter ? ' | <a onclick="vkopt_plugins[\''+PLUGIN_ID+'\'].filterInfo('+item.owner_id+','+item.pid+');">О фильтре</a>' : ''
                 });
             }
             vkopt_plugins[PLUGIN_ID].afterLoad(response.next_from);
