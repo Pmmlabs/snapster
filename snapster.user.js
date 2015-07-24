@@ -132,14 +132,6 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                 to: 'mail'
             }, {stat: ['page.js', 'page.css', 'wide_dd.js', 'wide_dd.css', 'sharebox.js']});
         },
-        //like: function(photo_id){   // лайк через API, т.к. через сайт нужен хеш
-        //    var owner_id=photo_id.split('_')[0];
-        //    var pid=photo_id.split('_')[1];
-        //    dApi.call('likes.add',{type})
-        //    var container = ge('like_count'+owner_id+'_photo'+pid)
-        //    container.innerHTML = intval(container.innerHTML)+1;
-        //    console.log(photo_id);  // TODO: поставить лайк через API
-        //},
         showMore: function() {  // Подгрузка новых записей; замена для Feed.showMore
             if (cur.isFeedLoading) return;
             cur.isFeedLoading = true;
@@ -153,6 +145,11 @@ if (!window.vkopt_plugins) vkopt_plugins={};
             return text.replace(/\[(id\d+)\|([^\]]+)\]/g,'<a href="/$1">$2</a>')
                 .replace(/(#[\wа-яА-Я]+)/g,'<a href="feed?section=snapster&sub=hashtags&hashtag=$1" ' +
                 'onclick="return vkopt_plugins[\'' + PLUGIN_ID + '\'].switchSection(\'hashtags\',\'$1\');">$1</a>');
+        },
+        createNode: function(template, params){
+            for (var i in params)
+                template = template.replace(new RegExp('\{'+i+'\}','g'),params[i]);
+            ge('feed_rows').appendChild(vkCe('div', {'class': 'feed_row'}, template));
         },
         switchSection: function(section, hashtag, next_from) {
             if (!ge('feed_rows')) location.reload();    // случай нажатия "назад" не с новостей
@@ -182,26 +179,26 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                             var photo = this.hashtags[i].photo.top_photo;
                             var oid = photo.split('_')[0];
                             var pid = photo.split('_')[1];
-                            ge('feed_rows').appendChild(vkCe('div', {'class': 'feed_row'}, postTemplate
-                                    .replace(/\{owner_id\}/g, oid)
-                                    .replace(/\{post_id\}/g, '1_' + oid)
-                                    .replace(/\{photo_id\}/g, photo)
-                                    .replace(/\{photoLike_id\}/g, oid + '_photo' + pid)
-                                    .replace(/\{src_big\}/g, this.hashtags[i].photo.src)
-                                    .replace(/\{name_link\}/g, '<a class="hashtag" href="feed?section=snapster&sub=hashtags&hashtag=' + this.hashtags[i].hashtag +
+                            this.createNode(postTemplate, {
+                                owner_id: oid,
+                                post_id: '1_' + oid,
+                                photo_id: photo,
+                                photoLike_id: oid + '_photo' + pid,
+                                src_big: this.hashtags[i].photo.src,
+                                name_link: '<a class="hashtag" href="feed?section=snapster&sub=hashtags&hashtag=' + this.hashtags[i].hashtag +
                                         '" onclick="return vkopt_plugins[\'' + PLUGIN_ID + '\'].switchSection(\'hashtags\',\'' + this.hashtags[i].hashtag +
-                                        '\');">' + this.hashtags[i].hashtag + '</a>')
-                                    .replace(/\{date\}/g, '')
-                                    .replace(/\{aid\}/g, 0)
-                                    .replace(/\{likes\}/g, '')
-                                    .replace(/\{mylike\}/g, '')
-                                    .replace(/\{avatar\}/g, '/images/chronicle/icon_'+(i % 5 + 1)+'.png') // В качестве аватара - картинка из набора иконок snapster
-                                    .replace(/\{verified\}/g, '')
-                                    .replace(/\{text\}/g, '')
-                                    .replace(/\{friend_status\}/g, '')
-                                    .replace(/\{place\}/g, '')
-                                    .replace(/\{comments\}/g, '')
-                            ));
+                                        '\');">' + this.hashtags[i].hashtag + '</a>',
+                                date: '',
+                                aid: 0,
+                                likes: '',
+                                mylike: '',
+                                avatar: '/images/chronicle/icon_' + (i % 5 + 1) + '.png', // В качестве аватара - картинка из набора иконок snapster
+                                verified: '',
+                                text: '',
+                                friend_status: '',
+                                place: '',
+                                comments: ''
+                            });
                         }
                         this.afterLoad('');
                     }
@@ -216,23 +213,23 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                         // Рендер постов-людей
                         for (var i = 0; i < response.items.length; i++) {
                             var item = response.items[i];
-                            ge('feed_rows').appendChild(vkCe('div', {'class': 'feed_row'}, peopleTemplate
-                                    .replace(/\{owner_id\}/g, item.profile.uid)
-                                    .replace(/\{post_id\}/g, '1_' + item.profile.uid + '_' + item.photos[0].created)
-                                    .replace(/\{photo_id1\}/g, item.photos[0].owner_id + '_' + item.photos[0].pid)
-                                    .replace(/\{photo_id2\}/g, item.photos[1].owner_id + '_' + item.photos[1].pid)
-                                    .replace(/\{photo_id3\}/g, item.photos[2].owner_id + '_' + item.photos[2].pid)
-                                    .replace(/\{photo_id4\}/g, item.photos[3].owner_id + '_' + item.photos[3].pid)
-                                    .replace(/\{src_big1\}/g, item.photos[0].src_big)
-                                    .replace(/\{src_big2\}/g, item.photos[1].src_big)
-                                    .replace(/\{src_big3\}/g, item.photos[2].src_big)
-                                    .replace(/\{src_big4\}/g, item.photos[3].src_big)
-                                    .replace(/\{name\}/g, item.profile.first_name+' '+item.profile.last_name)
-                                    .replace(/\{size\}/g, vkopt_plugins[PLUGIN_ID].PEOPLE_PHOTO_SIZE)
-                                    .replace(/\{avatar\}/g, item.profile.photo_50)
-                                    .replace(/\{friend_status\}/g, item.profile.friend_status ? '<span class="explain">(в друзьях)  '+item.profile.friend_status+'</span>' : '')
-                                    .replace(/\{verified\}/g, item.profile.verified ? '<span class="vk_profile_verified"></span>' : '')
-                            ));
+                            vkopt_plugins[PLUGIN_ID].createNode(peopleTemplate,{
+                                    owner_id: item.profile.uid,
+                                    post_id: '1_' + item.profile.uid + '_' + item.photos[0].created,
+                                    photo_id1: item.photos[0].owner_id + '_' + item.photos[0].pid,
+                                    photo_id2: item.photos[1].owner_id + '_' + item.photos[1].pid,
+                                    photo_id3: item.photos[2].owner_id + '_' + item.photos[2].pid,
+                                    photo_id4: item.photos[3].owner_id + '_' + item.photos[3].pid,
+                                    src_big1: item.photos[0].src_big,
+                                    src_big2: item.photos[1].src_big,
+                                    src_big3: item.photos[2].src_big,
+                                    src_big4: item.photos[3].src_big,
+                                    name: item.profile.first_name+' '+item.profile.last_name,
+                                    size: vkopt_plugins[PLUGIN_ID].PEOPLE_PHOTO_SIZE,
+                                    avatar: item.profile.photo_50,
+                                    friend_status: item.profile.friend_status ? '<span class="explain">(в друзьях)  '+item.profile.friend_status+'</span>' : '',
+                                    verified: item.profile.verified ? '<span class="vk_profile_verified"></span>' : ''
+                            });
                         }
                         vkopt_plugins[PLUGIN_ID].afterLoad(response.next_from);
                     });
@@ -247,24 +244,24 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                          //Рендер постов-людей
                         for (var i = 0; i < response.profiles.length; i++) {
                             var item = response.profiles[i];
-                            ge('feed_rows').appendChild(vkCe('div', {'class': 'feed_row'}, postTemplate
-                                    .replace(/\{owner_id\}/g, item.uid)
-                                    .replace(/\{post_id\}/g, '1_' + item.uid)
-                                    .replace(/\{photo_id\}/g, item.photo_id || item.uid+'_0')
-                                    .replace(/\{photoLike_id\}/g, item.photo_id ? item.photo_id.replace('_','_photo') : item.uid+'_photo0')
-                                    .replace(/\{text\}/g, vkopt_plugins[PLUGIN_ID].processHashtags(item.status))
-                                    .replace(/\{src_big\}/g, item.photo_400_orig || item.photo_200 || item.photo_100 || item.photo_50)
-                                    .replace(/\{name_link\}/g, '<a class="author" href="/id'+item.uid+'">'+item.first_name+' '+item.last_name+'</a>')
-                                    .replace(/\{date\}/g, '')
-                                    .replace(/\{aid\}/g, '0')
-                                    .replace(/\{likes\}/g, '')
-                                    .replace(/\{mylike\}/g, '')
-                                    .replace(/\{avatar\}/g, item.photo_50)
-                                    .replace(/\{friend_status\}/g, item.friend_status ? '<span class="explain">(в друзьях)</span>' : '')
-                                    .replace(/\{verified\}/g, item.verified ? '<span class="vk_profile_verified"></span>' : '')
-                                    .replace(/\{place\}/g, '')
-                                    .replace(/\{comments\}/g, '')
-                            ));
+                            vkopt_plugins[PLUGIN_ID].createNode(postTemplate, {
+                                    owner_id: item.uid,
+                                    post_id: '1_' + item.uid,
+                                    photo_id: item.photo_id || item.uid+'_0',
+                                    photoLike_id: item.photo_id ? item.photo_id.replace('_','_photo') : item.uid+'_photo0',
+                                    text: vkopt_plugins[PLUGIN_ID].processHashtags(item.status),
+                                    src_big: item.photo_400_orig || item.photo_200 || item.photo_100 || item.photo_50,
+                                    name_link: '<a class="author" href="/id'+item.uid+'">'+item.first_name+' '+item.last_name+'</a>',
+                                    date: '',
+                                    aid: '0',
+                                    likes: '',
+                                    mylike: '',
+                                    avatar: item.photo_50,
+                                    friend_status: item.friend_status ? '<span class="explain">(в друзьях)</span>' : '',
+                                    verified: item.verified ? '<span class="vk_profile_verified"></span>' : '',
+                                    place: '',
+                                    comments: ''
+                            });
                         }
                         vkopt_plugins[PLUGIN_ID].afterLoad(response.next_from);
                     });
@@ -314,27 +311,27 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                             '</div>';
                     comments+='</div></div>';
                 }
-                if (item) ge('feed_rows').appendChild(vkCe('div', {'class': 'feed_row'}, vkopt_plugins[PLUGIN_ID].postTemplate
-                        .replace(/\{owner_id\}/g, item.owner_id)
-                        .replace(/\{post_id\}/g, '1_' + item.owner_id + '_' + item.created)
-                        .replace(/\{photo_id\}/g, item.owner_id + '_' + item.pid)
-                        .replace(/\{photoLike_id\}/g, item.owner_id + '_photo' + item.pid)
-                        .replace(/\{text\}/g, vkopt_plugins[PLUGIN_ID].processHashtags(item.text))
-                        .replace(/\{src_big\}/g, item.src_big || item.src)
-                        .replace(/\{name_link\}/g, '<a class="author" href="/'+profiles[item.owner_id].screen_name+'">'+profiles[item.owner_id].first_name+' '+profiles[item.owner_id].last_name+'</a>')
-                        .replace(/\{date\}/g, dateFormat(item.created * 1000, "dd.mm.yyyy HH:MM:ss"))
-                        .replace(/\{aid\}/g, item.aid)
-                        .replace(/\{likes\}/g, item.likes ? item.likes.count : '')
-                        .replace(/\{mylike\}/g, item.likes && item.likes.user_likes ? 'my_like' : '')
-                        .replace(/\{avatar\}/g, profiles[item.owner_id].photo_50)
-                        .replace(/\{friend_status\}/g, profiles[item.owner_id].friend_status ? '<span class="explain">(в друзьях) '+profiles[item.owner_id].friend_status+' </span>' : '')
-                        .replace(/\{verified\}/g, profiles[item.owner_id].verified ? '<span class="vk_profile_verified"></span>' : '')
-                        .replace(/\{place\}/g, item.lat ? '<div class="media_desc">' +
-                            '<a class="page_media_place clear_fix" href="feed?q=near%3A'+item.lat+'%2C'+item.long+'&section=photos_search" onclick="nav.go(this.href,event)" title="Искать фотографии рядом">' +
-                            '<span class="fl_l checkin_big"></span>' +
-                            '<div class="fl_l page_media_place_label" style="width:auto">'+(item.place || '')+'<br/>'+item.lat+','+item.long+'</div></a></div>':'')
-                        .replace(/\{comments\}/g, comments)
-                ));
+                if (item) vkopt_plugins[PLUGIN_ID].createNode(vkopt_plugins[PLUGIN_ID].postTemplate, {
+                    owner_id: item.owner_id,
+                    post_id: '1_' + item.owner_id + '_' + item.created,
+                    photo_id: item.owner_id + '_' + item.pid,
+                    photoLike_id: item.owner_id + '_photo' + item.pid,
+                    text: vkopt_plugins[PLUGIN_ID].processHashtags(item.text),
+                    src_big: item.src_big || item.src,
+                    name_link: '<a class="author" href="/' + profiles[item.owner_id].screen_name + '">' + profiles[item.owner_id].first_name + ' ' + profiles[item.owner_id].last_name + '</a>',
+                    date: dateFormat(item.created * 1000, "dd.mm.yyyy HH:MM:ss"),
+                    aid: item.aid,
+                    likes: item.likes ? item.likes.count : '',
+                    mylike: item.likes && item.likes.user_likes ? 'my_like' : '',
+                    avatar: profiles[item.owner_id].photo_50,
+                    friend_status: profiles[item.owner_id].friend_status ? '<span class="explain">(в друзьях) ' + profiles[item.owner_id].friend_status + ' </span>' : '',
+                    verified: profiles[item.owner_id].verified ? '<span class="vk_profile_verified"></span>' : '',
+                    place: item.lat ? '<div class="media_desc">' +
+                        '<a class="page_media_place clear_fix" href="feed?q=near%3A' + item.lat + '%2C' + item.long + '&section=photos_search" onclick="nav.go(this.href,event)" title="Искать фотографии рядом">' +
+                        '<span class="fl_l checkin_big"></span>' +
+                        '<div class="fl_l page_media_place_label" style="width:auto">' + (item.place || '') + '<br/>' + item.lat + ',' + item.long + '</div></a></div>' : '',
+                    comments: comments
+                });
             }
             vkopt_plugins[PLUGIN_ID].afterLoad(response.next_from);
         },
