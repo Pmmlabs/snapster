@@ -150,9 +150,13 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                     html = '<table><tr><td>id:</td><td>'+response.id+'</td></tr>' +
                     '<tr><td>Версия приложения:</td><td>'+response.data.app_version+'</td></tr>' +
                     '<tr><td>Название:</td><td>'+response.data.name+'</td></tr>' +
-                    '<tr><td>Данные:</td><td style="max-height:200px;overflow-y:auto;display:block;">'+response.data.preset.toSource()+'</td></tr>' +
+                    '<tr><td>Данные:<br><a id="snpstr_dt">(в консоль)</a></td><td style="max-height:200px;overflow-y:auto;display:block;">'+response.data.preset.toSource()+'</td></tr>' +
                     '</table>';
                 box = vkAlertBox('Информация о фильтре '+photo_id, html);
+                if (!error)
+                    ge('snpstr_dt').onclick = function () {
+                        console.log(response.data.preset);
+                    }
             })
         },
         showMore: function() {  // Подгрузка новых записей; замена для Feed.showMore
