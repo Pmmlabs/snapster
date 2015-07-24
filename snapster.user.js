@@ -75,7 +75,9 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                 '</div>'+
                 '<div class="replies">'+
                     '<div class="reply_link_wrap sm">'+
-                        '<small class="feed_photos_num"><span class="rel_date">{date}</span>, фотография из </small><a onclick="return nav.change({z: \'album{owner_id}_{aid}\'}, event);"  href="/album{owner_id}_{aid}">альбома</a>'+
+                        '<small class="feed_photos_num"><span class="rel_date">{date}</span></small>' +
+                        ' | <a onclick="return nav.change({z: \'album{owner_id}_{aid}\'}, event);"  href="/album{owner_id}_{aid}">Альбом</a>'+
+                        ' | <a onclick="vkopt_plugins[\''+PLUGIN_ID+'\'].filterInfo(\'{photo_id}\');">О фильтре</a>'+
                     '</div>{comments}'+
                 '</div>'+
             '</div>'+
@@ -131,6 +133,27 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                 list: 'feed1_' + post_id,
                 to: 'mail'
             }, {stat: ['page.js', 'page.css', 'wide_dd.js', 'wide_dd.css', 'sharebox.js']});
+        },
+        filterInfo: function (photo_id) {
+            var box=vkAlertBox('',vkBigLdrImg);
+            var oid = photo_id.split('_')[0];
+            var pid = photo_id.split('_')[1];
+            dApi.call('chronicle.getPreset', {
+                owner_id: oid,
+                photo_id: pid
+            }, function (r, response, error) {
+                box.hide();
+                var html;
+                if (error)
+                    html = 'Нет информации о фильтре<br>'+error.error_msg;
+                else
+                    html = '<table><tr><td>id:</td><td>'+response.id+'</td></tr>' +
+                    '<tr><td>Версия приложения:</td><td>'+response.data.app_version+'</td></tr>' +
+                    '<tr><td>Название:</td><td>'+response.data.name+'</td></tr>' +
+                    '<tr><td>Данные:</td><td style="max-height:200px;overflow-y:auto;display:block;">'+response.data.preset.toSource()+'</td></tr>' +
+                    '</table>';
+                box = vkAlertBox('Информация о фильтре '+photo_id, html);
+            })
         },
         showMore: function() {  // Подгрузка новых записей; замена для Feed.showMore
             if (cur.isFeedLoading) return;
@@ -280,8 +303,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
             return false;
         },
         renderPosts: function (r, response) {   // Рендеринг постов в категориях "Популярное", "Рекомендации" и "Конкретный хештег"
-            // Более удобный объект с профилями
-            var profiles = {};
+            var profiles = {};  // Более удобный объект с профилями
             for (var i = 0; i < response.profiles.length; i++)
                 profiles[response.profiles[i].uid] = response.profiles[i];
             // Рендер постов
