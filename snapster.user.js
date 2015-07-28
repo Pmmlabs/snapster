@@ -281,11 +281,22 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                     });
                     break;
                 case 'feed':
+                    if (next_from === undefined) {
+                        ge('feed_rows').appendChild(vkCe('div', {id: 'vk_snapster_own'}));
+                        new Checkbox(ge("vk_snapster_own"), {
+                            checked: window.vk_snapster_own,
+                            label: 'Только из Snapster',
+                            onChange: function (state) {
+                                window.vk_snapster_own = (state == 1);
+                                vkopt_plugins[PLUGIN_ID].switchSection(section);
+                            }
+                        });
+                    }
                     dApi.call('chronicle.getFeed', {
                         //'likes_count': 0,
                         'start_from': next_from || 0,
                         'count': 10,
-                        'own': 0,
+                        'own': intval(window.vk_snapster_own),
                         'fields': fields,
                         'v': '5.13'
                     }, function (r, response) {
@@ -306,7 +317,9 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                     src_big: photo.photo_604 || photo.photo_807 || photo.photo_130 || photo.photo_75,
                                     name_link: '<a class="author" href="/' + profiles[item.source_id].screen_name + '">' + profiles[item.source_id].first_name + ' ' + profiles[item.source_id].last_name + '</a>',
                                     date: dateFormat(photo.date * 1000, "dd.mm.yyyy HH:MM:ss"),
-                                    aid: photo.album_id,
+                                    aid: (photo.album_id+'').replace('-6','0').replace('-7','00').replace('-15','000'),
+                                    likes: item.likes ? item.likes.count : '',
+                                    mylike: item.likes && item.likes.user_likes ? 'my_like' : '',
                                     avatar: profiles[item.source_id].photo_50,
                                     friend_status: profiles[item.source_id].friend_status ? '<span class="explain">(в друзьях)</span>' : '',
                                     verified: profiles[item.source_id].verified ? '<span class="vk_profile_verified"></span>' : '',
