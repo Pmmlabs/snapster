@@ -115,6 +115,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                 dApi.call('chronicle.getExplore', {}, function (r, response) {
                     response.push({section:'recommended',title:'Рекомендации / Смесь из возможных друзей и популярных пользователей'});
                     response.push({section:'people_list',title:'Список людей / Заглушка для пустой ленты'});
+                    response.push({section:'feed',title:'Лента'});
                     for (var i = 0; i < response.length; i++) {
                         if (response[i].section == 'hashtags')
                             vkopt_plugins[PLUGIN_ID].hashtags = response[i].hashtags;
@@ -273,10 +274,51 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                     aid: '0',
                                     avatar: item.photo_50,
                                     friend_status: item.friend_status ? '<span class="explain">(в друзьях)</span>' : '',
-                                    verified: item.verified ? '<span class="vk_profile_verified"></span>' : '',
+                                    verified: item.verified ? '<span class="vk_profile_verified"></span>' : ''
                             });
                         }
                         vkopt_plugins[PLUGIN_ID].afterLoad(response.next_from);
+                    });
+                    break;
+                case 'feed':
+                    dApi.call('chronicle.getFeed', {
+                        //'likes_count': 0,
+                        'start_from': next_from || 0,
+                        'count': 10,
+                        'own': 0,
+                        'fields': fields,
+                        'v': '5.13'
+                    }, function (r, response) {
+                        var profiles = {};  // Более удобный объект с профилями
+                        for (var i = 0; i < response.profiles.length; i++)
+                            profiles[response.profiles[i].id] = response.profiles[i];
+                        // Рендер постов
+                        for (var j = 0; j < response.items.length; j++) {
+                            var item = response.items[j];
+                            for (i = 0; i < item.photos.items.length; i++) {
+                                var photo = item.photos.items[i];
+                                vkopt_plugins[PLUGIN_ID].createNode(postTemplate, {
+                                    owner_id: item.source_id,
+                                    post_id: '1_' + item.source_id + '_' + item.post_id,
+                                    photo_id: photo.owner_id + '_' + photo.id,
+                                    photoLike_id: photo.owner_id + '_photo' + photo.id,
+                                    text: vkopt_plugins[PLUGIN_ID].processHashtags(photo.text),
+                                    src_big: photo.photo_604 || photo.photo_807 || photo.photo_130 || photo.photo_75,
+                                    name_link: '<a class="author" href="/' + profiles[item.source_id].screen_name + '">' + profiles[item.source_id].first_name + ' ' + profiles[item.source_id].last_name + '</a>',
+                                    date: dateFormat(photo.date * 1000, "dd.mm.yyyy HH:MM:ss"),
+                                    aid: photo.album_id,
+                                    avatar: profiles[item.source_id].photo_50,
+                                    friend_status: profiles[item.source_id].friend_status ? '<span class="explain">(в друзьях)</span>' : '',
+                                    verified: profiles[item.source_id].verified ? '<span class="vk_profile_verified"></span>' : '',
+                                    place: photo.lat ? '<div class="media_desc">' +
+                                        '<a class="page_media_place clear_fix" href="feed?q=near%3A' + photo.lat + '%2C' + photo.long + '&section=photos_search" onclick="nav.go(this.href,event)" title="Искать фотографии рядом">' +
+                                        '<span class="fl_l checkin_big"></span>' +
+                                        '<div class="fl_l page_media_place_label" style="width:auto">' + (photo.place || '') + '<br/>' + photo.lat + ',' + photo.long + '</div></a></div>' : '',
+                                    filter: photo.has_filter ? ' | <a onclick="vkopt_plugins[\'' + PLUGIN_ID + '\'].filterInfo(' + photo.owner_id + ',' + photo.id + ');">О фильтре</a>' : ''
+                                });
+                            }
+                        }
+                        vkopt_plugins[PLUGIN_ID].afterLoad(response.next_from || '');
                     });
                     break;
                 default : //    'recommended', 'popular_country', other...
