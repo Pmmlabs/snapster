@@ -321,7 +321,6 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                     likes: item.likes ? item.likes.count : '',
                                     mylike: item.likes && item.likes.user_likes ? 'my_like' : '',
                                     avatar: profiles[item.source_id].photo_50,
-                                    friend_status: profiles[item.source_id].friend_status ? '<span class="explain">(в друзьях)</span>' : '',
                                     verified: profiles[item.source_id].verified ? '<span class="vk_profile_verified"></span>' : '',
                                     place: photo.lat ? '<div class="media_desc">' +
                                         '<a class="page_media_place clear_fix" href="feed?q=near%3A' + photo.lat + '%2C' + photo.long + '&section=photos_search" onclick="nav.go(this.href,event)" title="Искать фотографии рядом">' +
