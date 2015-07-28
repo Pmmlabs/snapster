@@ -101,6 +101,11 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                 '</div>'+
             '</div>'+
         '</div>',
+        placeTemplate:'<div class="media_desc">' +
+        '<a class="page_media_place clear_fix" href="feed?q=near%3A{lat}%2C{long}&section=photos_search" onclick="nav.go(this.href,event)" title="Искать фотографии рядом">' +
+            '<span class="fl_l checkin_big"></span>' +
+            '<div class="fl_l page_media_place_label" style="width:480px">{place}<br/>{lat},{long}</div>' +
+        '</a></div>',
         next_from:0,
         // ФУНКЦИИ
         UI: function(subsection, hashtag) {
@@ -144,8 +149,10 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                 ok: function (r, response) {
                     box.hide();
                     var html = '<table><tr><td>id:</td><td>'+response.id+'</td></tr>' +
-                        '<tr><td>Версия приложения:</td><td>'+response.data.app_version+'</td></tr>' +
                         '<tr><td>Название:</td><td>'+response.data.name+'</td></tr>' +
+                        (response.data.app_version ? '<tr><td>Версия приложения:</td><td>'+response.data.app_version+'</td></tr>' : '') +
+                        (response.data.date ?  '<tr><td>Дата:</td><td>'+dateFormat(response.data.date * 1000, "dd.mm.yyyy HH:MM:ss")+'</td></tr>' : '') +
+                        '<tr><td>Владелец:</td><td><a href="/id'+response.owner_id+'">id'+response.owner_id+'</a></td></tr>' +
                         '<tr><td>Данные:<br><a id="snpstr_dt">(в консоль)</a></td><td style="max-height:200px;overflow-y:auto;display:block;">'+response.data.preset.toSource()+'</td></tr>' +
                         '</table>';
                     box = vkAlertBox('Информация о фильтре '+oid+'_'+pid, html);
@@ -322,10 +329,9 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                     mylike: item.likes && item.likes.user_likes ? 'my_like' : '',
                                     avatar: profiles[item.source_id].photo_50,
                                     verified: profiles[item.source_id].verified ? '<span class="vk_profile_verified"></span>' : '',
-                                    place: photo.lat ? '<div class="media_desc">' +
-                                        '<a class="page_media_place clear_fix" href="feed?q=near%3A' + photo.lat + '%2C' + photo.long + '&section=photos_search" onclick="nav.go(this.href,event)" title="Искать фотографии рядом">' +
-                                        '<span class="fl_l checkin_big"></span>' +
-                                        '<div class="fl_l page_media_place_label" style="width:auto">' + (photo.place || '') + '<br/>' + photo.lat + ',' + photo.long + '</div></a></div>' : '',
+                                    place: photo.lat ? vkopt_plugins[PLUGIN_ID].placeTemplate.replace(/\{lat\}/g, photo.lat)
+                                                                            .replace(/\{long\}/g, photo.long)
+                                                                            .replace(/\{place\}/g, photo.place || ''):'',
                                     filter: photo.has_filter ? ' | <a onclick="vkopt_plugins[\'' + PLUGIN_ID + '\'].filterInfo(' + photo.owner_id + ',' + photo.id + ');">О фильтре</a>' : ''
                                 });
                             }
@@ -392,10 +398,9 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                     avatar: profiles[item.owner_id].photo_50,
                     friend_status: profiles[item.owner_id].friend_status ? '<span class="explain">(в друзьях) ' + profiles[item.owner_id].friend_status + ' </span>' : '',
                     verified: profiles[item.owner_id].verified ? '<span class="vk_profile_verified"></span>' : '',
-                    place: item.lat ? '<div class="media_desc">' +
-                        '<a class="page_media_place clear_fix" href="feed?q=near%3A' + item.lat + '%2C' + item.long + '&section=photos_search" onclick="nav.go(this.href,event)" title="Искать фотографии рядом">' +
-                        '<span class="fl_l checkin_big"></span>' +
-                        '<div class="fl_l page_media_place_label" style="width:auto">' + (item.place || '') + '<br/>' + item.lat + ',' + item.long + '</div></a></div>' : '',
+                    place: item.lat ? vkopt_plugins[PLUGIN_ID].placeTemplate.replace(/\{lat\}/g, item.lat)
+                                                                            .replace(/\{long\}/g, item.long)
+                                                                            .replace(/\{place\}/g, item.place || ''):'',
                     comments: comments,
                     filter: item.has_filter ? ' | <a onclick="vkopt_plugins[\''+PLUGIN_ID+'\'].filterInfo('+item.owner_id+','+item.pid+');">О фильтре</a>' : ''
                 });
