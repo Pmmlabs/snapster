@@ -325,8 +325,8 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                     name_link: '<a class="author" href="/' + profiles[item.source_id].screen_name + '">' + profiles[item.source_id].first_name + ' ' + profiles[item.source_id].last_name + '</a>',
                                     date: dateFormat(photo.date * 1000, "dd.mm.yyyy HH:MM:ss"),
                                     aid: (photo.album_id+'').replace('-6','0').replace('-7','00').replace('-15','000'),
-                                    likes: item.likes ? item.likes.count : '',
-                                    mylike: item.likes && item.likes.user_likes ? 'my_like' : '',
+                                    likes: photo.likes ? photo.likes.count : '',
+                                    mylike: photo.likes && photo.likes.user_likes ? 'my_like' : '',
                                     avatar: profiles[item.source_id].photo_50,
                                     verified: profiles[item.source_id].verified ? '<span class="vk_profile_verified"></span>' : '',
                                     place: photo.lat ? vkopt_plugins[PLUGIN_ID].placeTemplate.replace(/\{lat\}/g, photo.lat)
