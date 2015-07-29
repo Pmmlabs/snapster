@@ -111,6 +111,8 @@ if (!window.vkopt_plugins) vkopt_plugins={};
         UI: function(subsection, hashtag) {
             if (isVisible(ge('feed_empty'))) {  // делать интерфейс только если его еще нет, т.е. надпись "новостей нет" все еще видна.
                 hide(ge('feed_empty'));
+                // Удаление аякса при щелчке на Новости в левом меню
+                geByTag('a',ge('l_nwsf'))[0].setAttribute('onclick','return true');
                 // Удаление шапки
                 var feed_news_bar = ge('feed_news_bar');
                 var summary_tabs = geByClass('summary_tab', feed_news_bar);
