@@ -20,6 +20,7 @@
    - `chronicle.getExploreSection`
    - `chronicle.getPreset`
    - `chronicle.getFeed`
+   - `chronicle.search`
    
 ## Скриншот
 

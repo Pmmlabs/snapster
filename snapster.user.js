@@ -18,7 +18,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
     var PLUGIN_ID = 'snapster';
     var PEOPLE_PHOTO_SIZE = 262; // Размер квадратных фоток-миниатюр в разделе "Люди"
     vkopt_plugins[PLUGIN_ID]={
-        Name:             'Snapster web-client',
+        Name: 'Snapster web-client',
         css: '.quadro-photo {width: '+PEOPLE_PHOTO_SIZE+'px; height: '+PEOPLE_PHOTO_SIZE+'px;} .hashtag {font-size:2em}',
         // СОБЫТИЯ
         init: function(){   // При подключении плагина к Вкопту
@@ -123,6 +123,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                     response.push({section:'recommended',title:'Рекомендации / Смесь из возможных друзей и популярных пользователей'});
                     response.push({section:'people_list',title:'Список людей / Заглушка для пустой ленты'});
                     response.push({section:'feed',title:'Лента'});
+                    response.push({section:'search',title:'Поиск'});
                     for (var i = 0; i < response.length; i++) {
                         if (response[i].section == 'hashtags')
                             vkopt_plugins[PLUGIN_ID].hashtags = response[i].hashtags;
@@ -302,7 +303,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                         });
                     }
                     dApi.call('chronicle.getFeed', {
-                        //'likes_count': 0,
+                        'likes_count': 0,
                         'start_from': next_from || 0,
                         'count': 10,
                         'own': intval(window.vk_snapster_own),
@@ -340,6 +341,27 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                         }
                         vkopt_plugins[PLUGIN_ID].afterLoad(response.next_from || '');
                     });
+                    break;
+                case 'search':  // Поиск
+                    if (next_from === undefined) {  // Не подгрузка. Создание поля для ввода поискового запроса.
+                        ge('feed_rows').appendChild(vkCe('input', {
+                            'type': 'text',
+                            'class': 'text search',
+                            'style': 'width: 95%',
+                            'placeholder': IDL('mMaS'),
+                            'value': hashtag || '',
+                            'onkeyup': 'if (event.keyCode == 10 || event.keyCode == 13) vkopt_plugins[\'' + PLUGIN_ID + '\'].switchSection(\'' + section + '\',val(this))'
+                        }));
+                    }
+                    if (hashtag)    // hashtag - поисковый запрос
+                        dApi.call('chronicle.search', {
+                            'q': hashtag,
+                            'start_from': next_from || 0,
+                            'count': 10,
+                            'fields': fields
+                        }, vkopt_plugins[PLUGIN_ID].renderPosts);
+                    else
+                        vkopt_plugins[PLUGIN_ID].afterLoad('');
                     break;
                 default : //    'recommended', 'popular_country', other...
                     dApi.call('chronicle.getExploreSection', {
@@ -385,7 +407,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                             '</div>';
                     comments+='</div></div>';
                 }
-                if (item) vkopt_plugins[PLUGIN_ID].createNode(vkopt_plugins[PLUGIN_ID].postTemplate, {
+                if (item && typeof item == 'object') vkopt_plugins[PLUGIN_ID].createNode(vkopt_plugins[PLUGIN_ID].postTemplate, {
                     owner_id: item.owner_id,
                     post_id: '1_' + item.owner_id + '_' + item.created,
                     photo_id: item.owner_id + '_' + item.pid,
@@ -413,13 +435,13 @@ if (!window.vkopt_plugins) vkopt_plugins={};
             hide('feed_progress');
             hide('show_more_progress');
             cur.isFeedLoading = false;
-            if (next_from === '') {
-                hide('show_more_link');
-                show('all_shown');
-            } else {
-                if (next_from) this.next_from = next_from;
+            if (next_from) {    // Если есть ещё
+                this.next_from = next_from;
                 show('show_more_link');
                 hide('all_shown');
+            } else {            // Если больше нет
+                hide('show_more_link');
+                show('all_shown');
             }
             cur.idleManager.isIdle=false; // для правильной работы обработчика события scroll
         }
