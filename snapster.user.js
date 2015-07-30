@@ -179,8 +179,8 @@ if (!window.vkopt_plugins) vkopt_plugins={};
             if (window.Emoji && Emoji.emojiToHTML)
                 text = Emoji.emojiToHTML(text,true) || text;
             return text.replace(/\[(id\d+)\|([^\]]+)\]/g,'<a href="/$1">$2</a>')
-                .replace(/(#[\wа-яА-Я]+)/g,'<a href="feed?section=snapster&sub=hashtags&hashtag=$1" ' +
-                'onclick="return vkopt_plugins[\'' + PLUGIN_ID + '\'].switchSection(\'hashtags\',\'$1\');">$1</a>');
+                .replace(/(#[\wа-яА-Я]+)/g,'<a href="feed?section=snapster&sub=search&hashtag=$1" ' +
+                'onclick="return vkopt_plugins[\'' + PLUGIN_ID + '\'].switchSection(\'search\',\'$1\');">$1</a>');
         },
         createNode: function(template, params){
             for (var i in params)
