@@ -22,6 +22,15 @@
    - `chronicle.getFeed`
    - `chronicle.search`
    
-## Скриншот
+## Скриншоты
 
-![screenshot](https://cloud.githubusercontent.com/assets/2682026/8810822/5c2bc40c-2ffa-11e5-9ea9-fabb054ef465.jpg)
+![screenshot](https://pp.vk.me/c629405/v629405347/a24e/ysoNuUPWeWM.jpg)<br>
+![screenshot](https://pp.vk.me/c629405/v629405347/a23a/X9oF7t4c4ig.jpg)<br>
+![screenshot](https://pp.vk.me/c629405/v629405347/a214/hNBobnPNHmY.jpg)<br>
+![screenshot](https://pp.vk.me/c629405/v629405347/a21c/RUMzjbsnnPw.jpg)<br>
+![screenshot](https://pp.vk.me/c629405/v629405347/a20b/my2KjAw2GWU.jpg)<br>
+![screenshot](https://pp.vk.me/c629405/v629405347/a226/UGrGaho3om4.jpg)<br>
+![screenshot](https://pp.vk.me/c629405/v629405347/a230/zaqKIe8tvQM.jpg)
+
+
+
