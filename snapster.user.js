@@ -8,6 +8,7 @@
 // @include        *vk.com*
 // @run-at         document-end
 // @downloadURL    https://raw.githubusercontent.com/Pmmlabs/snapster/master/snapster.user.js
+// @updateURL      https://raw.githubusercontent.com/Pmmlabs/snapster/master/snapster.meta.js
 // @icon           http://vk.com/images/chronicle/logotype.png
 // @noframes
 // @grant none
