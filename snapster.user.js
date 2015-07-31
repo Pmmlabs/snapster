@@ -58,7 +58,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                     '</div>'+
                     '<div class="wall_post_text">{text}</div>'+
                     '<div class="page_post_sized_thumbs clear_fix">'+
-                        '<a href="/photo{photo_id}" onclick="return showPhoto(\'{photo_id}\', \'photos{owner_id}\', {}, event);" style="width: 537px; height: 537px;" class="page_post_thumb_wrap page_post_thumb_last_row fl_l"><img src="{src_big}" width="537" class="page_post_thumb_sized_photo"></a>'+
+                        '<a href="/photo{photo_id}" onclick="return showPhoto(\'{photo_id}\', \'photos{owner_id}\', {}, event);" style="width: 537px; height: {height}px;" class="page_post_thumb_wrap page_post_thumb_last_row fl_l"><img src="{src_big}" width="537" class="page_post_thumb_sized_photo"></a>'+
                     '</div>{place}' +
                 '</div>'+
                 '<div class="post_full_like_wrap sm fl_r">'+
@@ -112,8 +112,8 @@ if (!window.vkopt_plugins) vkopt_plugins={};
         UI: function(subsection, hashtag) {
             if (isVisible(ge('feed_empty'))) {  // делать интерфейс только если его еще нет, т.е. надпись "новостей нет" все еще видна.
                 hide(ge('feed_empty'));
-                // Удаление аякса при щелчке на Новости в левом меню
-                geByTag('a',ge('l_nwsf'))[0].setAttribute('onclick','return true');
+                geByTag('a',ge('l_nwsf'))[0].setAttribute('onclick','return true'); // Удаление аякса при щелчке на Новости в левом меню
+                clearInterval(cur.updateInt); // Не обновлять ленту стандартными средствами feed
                 // Удаление шапки
                 var feed_news_bar = ge('feed_news_bar');
                 var summary_tabs = geByClass('summary_tab', feed_news_bar);
@@ -227,7 +227,8 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                         '" onclick="return vkopt_plugins[\'' + PLUGIN_ID + '\'].switchSection(\'hashtags\',\'' + this.hashtags[i].hashtag +
                                         '\');">' + this.hashtags[i].hashtag + '</a>',
                                 aid: 0,
-                                avatar: '/images/chronicle/icon_' + (i % 5 + 1) + '.png' // В качестве аватара - картинка из набора иконок snapster
+                                avatar: '/images/chronicle/icon_' + (i % 5 + 1) + '.png', // В качестве аватара - картинка из набора иконок snapster
+                                height: this.hashtags[i].photo.height * 537 / this.hashtags[i].photo.width
                             });
                         }
                         this.afterLoad('');
@@ -285,7 +286,8 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                     aid: '0',
                                     avatar: item.photo_50,
                                     friend_status: item.friend_status ? '<span class="explain">(в друзьях)</span>' : '',
-                                    verified: item.verified ? '<span class="vk_profile_verified"></span>' : ''
+                                    verified: item.verified ? '<span class="vk_profile_verified"></span>' : '',
+                                    height: 537
                             });
                         }
                         vkopt_plugins[PLUGIN_ID].afterLoad(response.next_from);
@@ -336,7 +338,8 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                     place: photo.lat ? vkopt_plugins[PLUGIN_ID].placeTemplate.replace(/\{lat\}/g, photo.lat)
                                                                             .replace(/\{long\}/g, photo.long)
                                                                             .replace(/\{place\}/g, photo.place || ''):'',
-                                    filter: photo.has_filter ? ' | <a onclick="vkopt_plugins[\'' + PLUGIN_ID + '\'].filterInfo(' + photo.owner_id + ',' + photo.id + ');">О фильтре</a>' : ''
+                                    filter: photo.has_filter ? ' | <a onclick="vkopt_plugins[\'' + PLUGIN_ID + '\'].filterInfo(' + photo.owner_id + ',' + photo.id + ');">О фильтре</a>' : '',
+                                    height: photo.height * 537 / photo.width
                                 });
                             }
                         }
@@ -427,7 +430,8 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                                                             .replace(/\{long\}/g, item.long)
                                                                             .replace(/\{place\}/g, item.place || ''):'',
                     comments: comments,
-                    filter: item.has_filter ? ' | <a onclick="vkopt_plugins[\''+PLUGIN_ID+'\'].filterInfo('+item.owner_id+','+item.pid+');">О фильтре</a>' : ''
+                    filter: item.has_filter ? ' | <a onclick="vkopt_plugins[\''+PLUGIN_ID+'\'].filterInfo('+item.owner_id+','+item.pid+');">О фильтре</a>' : '',
+                    height: item.height * 537 / item.width
                 });
             }
             vkopt_plugins[PLUGIN_ID].afterLoad(response.next_from);
