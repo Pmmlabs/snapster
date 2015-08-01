@@ -108,6 +108,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
             '<div class="fl_l page_media_place_label" style="width:480px">{place}<br/>{lat},{long}</div>' +
         '</a></div>',
         next_from:0,
+        friend_statuses: ['','в друзьях 1','ваш подписчик','в друзьях'],
         // ФУНКЦИИ
         UI: function(subsection, hashtag) {
             if (isVisible(ge('feed_empty'))) {  // делать интерфейс только если его еще нет, т.е. надпись "новостей нет" все еще видна.
@@ -258,7 +259,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                     name: item.profile.first_name+' '+item.profile.last_name,
                                     size: vkopt_plugins[PLUGIN_ID].PEOPLE_PHOTO_SIZE,
                                     avatar: item.profile.photo_50,
-                                    friend_status: item.profile.friend_status ? '<span class="explain">(в друзьях)  '+item.profile.friend_status+'</span>' : '',
+                                    friend_status: item.profile.friend_status ? '<span class="explain">('+vkopt_plugins[PLUGIN_ID].friend_statuses[item.profile.friend_status]+')</span>' : '',
                                     verified: item.profile.verified ? '<span class="vk_profile_verified"></span>' : ''
                             });
                         }
@@ -285,7 +286,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                     name_link: '<a class="author" href="/id'+item.uid+'">'+item.first_name+' '+item.last_name+'</a>',
                                     aid: '0',
                                     avatar: item.photo_50,
-                                    friend_status: item.friend_status ? '<span class="explain">(в друзьях)</span>' : '',
+                                    friend_status: item.friend_status ? '<span class="explain">('+vkopt_plugins[PLUGIN_ID].friend_statuses[item.friend_status]+')</span>' : '',
                                     verified: item.verified ? '<span class="vk_profile_verified"></span>' : '',
                                     height: 537
                             });
@@ -424,7 +425,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                     likes: item.likes ? item.likes.count : '',
                     mylike: item.likes && item.likes.user_likes ? 'my_like' : '',
                     avatar: profiles[item.owner_id].photo_50,
-                    friend_status: profiles[item.owner_id].friend_status ? '<span class="explain">(в друзьях) ' + profiles[item.owner_id].friend_status + ' </span>' : '',
+                    friend_status: profiles[item.owner_id].friend_status ? '<span class="explain">('+vkopt_plugins[PLUGIN_ID].friend_statuses[profiles[item.owner_id].friend_status]+')</span>' : '',
                     verified: profiles[item.owner_id].verified ? '<span class="vk_profile_verified"></span>' : '',
                     place: item.lat ? vkopt_plugins[PLUGIN_ID].placeTemplate.replace(/\{lat\}/g, item.lat)
                                                                             .replace(/\{long\}/g, item.long)
