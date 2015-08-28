@@ -126,6 +126,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                     response.push({section:'people_list',title:'Список людей / Заглушка для пустой ленты'});
                     response.push({section:'feed',title:'Лента'});
                     response.push({section:'search',title:'Поиск'});
+                    response.push({section:'add',title:'Добавить'});
                     for (var i = 0; i < response.length; i++) {
                         if (response[i].section == 'hashtags')
                             vkopt_plugins[PLUGIN_ID].hashtags = response[i].hashtags;
@@ -368,6 +369,19 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                     else
                         vkopt_plugins[PLUGIN_ID].afterLoad('');
                     break;
+                case 'add': //Добавить
+                    vkLdr.show();
+                    dApi.call('chronicle.getUploadServer', {}, function (r, response) {
+                        vkLdr.hide();
+                        var html = '<center><span class="label">' + IDL('GraffitiFile') + '</span>\
+                        <br><input type="file" style="width:280px;" size="22" id="fakeupload">\
+                        <button onclick="vkopt_plugins.'+PLUGIN_ID+'.submitFile(\''+response.upload_url+'\')" class="flat_button">Отправить</button></center>';
+                        var Box = new MessageBox({title: 'Добавить через Snapster'});
+                        Box.removeButtons();
+                        Box.addButton(getLang('box_cancel'), null, 'no');
+                        Box.content(html).show();
+                    });
+                    break;
                 default : //    'recommended', 'popular_country', other...
                     dApi.call('chronicle.getExploreSection', {
                         'section': section,
@@ -450,6 +464,55 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                 show('all_shown');
             }
             cur.idleManager.isIdle=false; // для правильной работы обработчика события scroll
+        },
+        submitFile: function (server_url) {
+            vkLdr.show();
+            function toFormData(data) {
+                var header = '--' + boundary + '\r\nContent-Disposition: form-data; name="file1"; filename="file1.jpg"\r\nContent-Type: image/jpeg\r\n\r\n';
+                var footer = '\r\n--' + boundary + '--\r\n';
+                var result = [];
+
+                var cat = function (raw) {
+                    for (var i = 0; i < raw.length; i++) {
+                        result.push(raw.charCodeAt(i) & 0xff);
+                    }
+                };
+                cat(header);
+
+                for (var i = 0; i < data.length; i++) {
+                    result.push(data[i]);
+                }
+                cat(footer);
+                return result;
+            }
+
+            var file = ge('fakeupload').files[0];
+            if (file) {
+                var reader = new FileReader();
+                var boundary = "--snapster.user.js--by--pmmlabs";
+                reader.onload = function (e) {
+                    vk_aj.ajax({
+                            method: 'POST',
+                            headers: {'Content-type': 'multipart/form-data; boundary=' + boundary},
+                            url: server_url,
+                            data: toFormData(new Uint8Array(e.target.result))
+                        }, function (a) {
+                            var saveInfo = JSON.parse(a.text);
+                            dApi.call('chronicle.save', {
+                                album_id: Math.abs(saveInfo.aid),
+                                server: saveInfo.server,
+                                hash: saveInfo.hash,
+                                photos_list: saveInfo.photos_list
+                            }, function (r, response) {
+                                vkLdr.hide();
+                                showPhoto(response[0].owner_id + '_' + response[0].pid, 'album' + response[0].owner_id + '_' + response[0].aid, {});
+                            });
+                        }
+                    );
+                };
+                reader.readAsArrayBuffer(file);
+            } else
+                vkMsg('Не выбран файл');
         }
     };
     if (window.vkopt_ready) vkopt_plugin_run(PLUGIN_ID);
