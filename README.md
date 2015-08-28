@@ -21,6 +21,8 @@
    - `chronicle.getPreset`
    - `chronicle.getFeed`
    - `chronicle.search`
+   - `chronicle.getUploadServer`
+   - `chronicle.save`
    
 ## Скриншоты
 
