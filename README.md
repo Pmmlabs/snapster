@@ -15,7 +15,7 @@
 После этого переходите по ссылке [https://raw.githubusercontent.com/Pmmlabs/snapster/master/snapster.user.js](https://raw.githubusercontent.com/Pmmlabs/snapster/master/snapster.user.js) и нажимайте Install
 
 ## Задействованные методы API
-
+(8/20)
    - `chronicle.getExplore`
    - `chronicle.getExploreSection`
    - `chronicle.getPreset`
@@ -23,6 +23,7 @@
    - `chronicle.search`
    - `chronicle.getUploadServer`
    - `chronicle.save`
+   - `chronicle.getMessages`
    
 ## Скриншоты
 

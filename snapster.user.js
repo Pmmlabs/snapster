@@ -125,11 +125,14 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                     feed_news_bar.removeChild(summary_tabs[i]);
                 // Формирование шапки. Категории новостей.
                 dApi.call('chronicle.getExplore', {}, function (r, response) {
-                    response.push({section:'recommended',title:'Рекомендации / Смесь из возможных друзей и популярных пользователей'});
-                    response.push({section:'people_list',title:'Список людей / Заглушка для пустой ленты'});
-                    response.push({section:'feed',title:'Лента'});
-                    response.push({section:'search',title:'Поиск'});
-                    response.push({section:'add',title:'Добавить'});
+                    response = response.concat(
+                        { section: 'recommended', title: 'Рекомендации / Смесь из возможных друзей и популярных пользователей' }
+                        , {section: 'people_list', title: 'Список людей / Заглушка для пустой ленты'}
+                        , {section: 'feed', title: 'Лента'}
+                        , {section: 'search', title: 'Поиск'}
+                        , {section: 'messages', title: 'Сообщения'}
+                        , {section: 'add', title: 'Добавить'}
+                    );
                     for (var i = 0; i < response.length; i++) {
                         if (response[i].section == 'hashtags')
                             vkopt_plugins[PLUGIN_ID].hashtags = response[i].hashtags;
@@ -301,13 +304,15 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                 case 'feed':
                     if (next_from === undefined) {
                         ge('feed_rows').appendChild(vkCe('div', {id: 'vk_snapster_own'}));
-                        new Checkbox(ge("vk_snapster_own"), {
-                            checked: window.vk_snapster_own,
-                            label: 'Только из Snapster',
-                            onChange: function (state) {
-                                window.vk_snapster_own = (state == 1);
-                                vkopt_plugins[PLUGIN_ID].switchSection(section);
-                            }
+                        stManager.add(['ui_controls.js'],function() {
+                            new Checkbox(ge("vk_snapster_own"), {
+                                checked: window.vk_snapster_own,
+                                label: 'Только из Snapster',
+                                onChange: function (state) {
+                                    window.vk_snapster_own = (state == 1);
+                                    vkopt_plugins[PLUGIN_ID].switchSection(section);
+                                }
+                            });
                         });
                     }
                     dApi.call('chronicle.getFeed', {
@@ -349,6 +354,18 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                             }
                         }
                         vkopt_plugins[PLUGIN_ID].afterLoad(response.next_from || '');
+                    });
+                    break;
+                case 'messages':
+                    dApi.call('chronicle.getMessages', {}, function (r, response) {
+                        stManager.add('im.css');    // Нужно для картиночки с таймером
+                        var new_response = {items: [], profiles: response.profiles};
+                        for (var i = 1, itemsLen = response[0]; i <= itemsLen; i++) { // Перегруппировка данных для использования функции рендера постов
+                            if (response[i].timer)
+                                response[i].photo.text = '<div class="im_row_attach" title="Самоудаляющаяся фотография"><div class="im_attach_chronicle"></div>' + response[i].timer + ' сек.</div>' + response[i].photo.text;
+                            new_response.items[i - 1] = response[i].photo;
+                        }
+                        vkopt_plugins[PLUGIN_ID].renderPosts(r, new_response);
                     });
                     break;
                 case 'search':  // Поиск
