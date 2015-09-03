@@ -20,7 +20,10 @@ if (!window.vkopt_plugins) vkopt_plugins={};
     var PEOPLE_PHOTO_SIZE = 262; // Размер квадратных фоток-миниатюр в разделе "Люди"
     vkopt_plugins[PLUGIN_ID]={
         Name: 'Snapster web-client',
-        css: '.quadro-photo {width: '+PEOPLE_PHOTO_SIZE+'px; height: '+PEOPLE_PHOTO_SIZE+'px;} .hashtag {font-size:2em}',
+        css: '.quadro-photo {width: '+PEOPLE_PHOTO_SIZE+'px; height: '+PEOPLE_PHOTO_SIZE+'px;}' +
+        '.hashtag {font-size:2em}' +
+        '#snapster_add_table td:first-child {width:10%}' +
+        '#snapster_add_table input {width:100%}',
         // СОБЫТИЯ
         init: function(){   // При подключении плагина к Вкопту
             // Добавление нового пункта меню в левое меню
@@ -316,12 +319,12 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                         'v': '5.13'
                     }, function (r, response) {
                         var profiles = {};  // Более удобный объект с профилями
-                        for (var i = 0; i < response.profiles.length; i++)
+                        for (var i = 0, profLen=response.profiles.length; i < profLen; i++)
                             profiles[response.profiles[i].id] = response.profiles[i];
                         // Рендер постов
-                        for (var j = 0; j < response.items.length; j++) {
+                        for (var j = 0, itemsLen = response.items.length; j < itemsLen; j++) {
                             var item = response.items[j];
-                            for (i = 0; i < item.photos.items.length; i++) {
+                            for (var i = 0, photosLen = item.photos.items.length; i < photosLen; i++) {
                                 var photo = item.photos.items[i];
                                 vkopt_plugins[PLUGIN_ID].createNode(postTemplate, {
                                     owner_id: item.source_id,
@@ -370,16 +373,30 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                         vkopt_plugins[PLUGIN_ID].afterLoad('');
                     break;
                 case 'add': //Добавить
-                    vkLdr.show();
+                    var html = '<h2>' + IDL('Add') + '</h2><table id="snapster_add_table">\
+                        <tr><td>Описание:</td><td> <input type="text" class="text" id="snapster_add_caption" placeholder="Описание..."></td></tr>\
+                        <tr><td>Фильтр:</td><td> <input type="text" class="text" id="snapster_add_filter" placeholder="В формате oid_fid"></td></tr>\
+                        <tr><td>Получатели:</td><td> <input type="text" class="text" id="snapster_add_message" placeholder="id через запятую (для отправки личным сообщением)"></td></tr>\
+                        <tr><td>Таймер:</td><td> <input type="text" class="text" id="snapster_add_timer" placeholder="Количество секунд (для самоуничтожающейся фотографии)"></td></tr>\
+                        <tr><td>Файл:</td><td><input type="file" class="text" id="fakeupload"></td></table>\
+                        <div id="snapster_add_invk"></div><div id="snapster_add_wall"></div>\
+                        <center><button id="snapster_add_button" class="flat_button">Отправить</button></center>';
+                    ge('feed_rows').appendChild(vkCe('div', {}, html));
+                    stManager.add(['ui_controls.js'],function(){
+                        new Checkbox(ge("snapster_add_wall"), {
+                            checked: false,
+                            label: 'Опубликовать на стене'
+                        });
+                        new Checkbox(ge("snapster_add_invk"), {
+                            checked: true,
+                            label: 'Добавить во ВКонтакте'
+                        });
+                    });
                     dApi.call('chronicle.getUploadServer', {}, function (r, response) {
-                        vkLdr.hide();
-                        var html = '<center><span class="label">' + IDL('GraffitiFile') + '</span>\
-                        <br><input type="file" style="width:280px;" size="22" id="fakeupload">\
-                        <button onclick="vkopt_plugins.'+PLUGIN_ID+'.submitFile(\''+response.upload_url+'\')" class="flat_button">Отправить</button></center>';
-                        var Box = new MessageBox({title: 'Добавить через Snapster'});
-                        Box.removeButtons();
-                        Box.addButton(getLang('box_cancel'), null, 'no');
-                        Box.content(html).show();
+                        ge('snapster_add_button').onclick = function () {
+                            vkopt_plugins[PLUGIN_ID].submitFile(response.upload_url);
+                        };
+                        vkopt_plugins[PLUGIN_ID].afterLoad('');
                     });
                     break;
                 default : //    'recommended', 'popular_country', other...
@@ -397,10 +414,10 @@ if (!window.vkopt_plugins) vkopt_plugins={};
         },
         renderPosts: function (r, response) {   // Рендеринг постов в категориях "Популярное", "Рекомендации" и "Конкретный хештег"
             var profiles = {};  // Более удобный объект с профилями
-            for (var i = 0; i < response.profiles.length; i++)
+            for (var i = 0, profLen = response.profiles.length; i < profLen; i++)
                 profiles[response.profiles[i].uid] = response.profiles[i];
             // Рендер постов
-            for (var i = 0; i < response.items.length; i++) {
+            for (var i = 0, itemsLen = response.items.length; i < itemsLen; i++) {
                 var item = response.items[i];
                 // Комменты
                 var comments = '';
@@ -472,17 +489,18 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                 var footer = '\r\n--' + boundary + '--\r\n';
                 var result = [];
 
-                var cat = function (raw) {
-                    for (var i = 0; i < raw.length; i++) {
-                        result.push(raw.charCodeAt(i) & 0xff);
+                var str2bytes = function (str) {
+                    for (var i = 0, strLen=str.length; i < strLen; i++) {
+                        result.push(str.charCodeAt(i) & 0xff);
                     }
                 };
-                cat(header);
 
-                for (var i = 0; i < data.length; i++) {
+                str2bytes(header);
+                for (var i = 0, dataLen = data.length; i < dataLen; i++) {
                     result.push(data[i]);
                 }
-                cat(footer);
+                str2bytes(footer);
+
                 return result;
             }
 
@@ -499,13 +517,23 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                         }, function (a) {
                             var saveInfo = JSON.parse(a.text);
                             dApi.call('chronicle.save', {
-                                album_id: Math.abs(saveInfo.aid),
                                 server: saveInfo.server,
                                 hash: saveInfo.hash,
-                                photos_list: saveInfo.photos_list
+                                photos_list: saveInfo.photos_list,
+                                caption: val(ge('snapster_add_caption')),
+                                filter: val(ge('snapster_add_filter')),
+                                //comment: 1,   // Что даёт? непонятно. Но что-то даёт.
+                                wall: val(ge('snapster_add_wall')),
+                                no_vk: intval(!val(ge('snapster_add_invk'))),
+                                timer: val(ge('snapster_add_timer')),
+                                mail: intval(!!val(ge('snapster_add_message'))),
+                                mail_to: val(ge('snapster_add_message'))
                             }, function (r, response) {
                                 vkLdr.hide();
-                                showPhoto(response[0].owner_id + '_' + response[0].pid, 'album' + response[0].owner_id + '_' + response[0].aid, {});
+                                if (response[0].is_mail)
+                                    vkMsg('Фотография отправлена');
+                                else
+                                    showPhoto(response[0].owner_id + '_' + response[0].pid, 'album' + response[0].owner_id + '_' + response[0].aid, {});
                             });
                         }
                     );
