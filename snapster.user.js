@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             Snapster@vkopt
 // @name           Snapster plugin for VkOpt
-// @version        1.0
+// @version        1.1
 // @namespace      https://greasyfork.org/users/23
 // @author         Pmmlabs@github
 // @description    Плагин для VkOpt, добавляющий на сайт ВКонтакте веб-клиент Snapster
