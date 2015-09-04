@@ -390,6 +390,8 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                         vkopt_plugins[PLUGIN_ID].afterLoad('');
                     break;
                 case 'add': //Добавить
+                    if (vVersion < 232)
+                        vkMsg("Добавление фотографий возможно только при использовании VkOpt версии 2.3.2 и выше", 7000);
                     var html = '<h2>' + IDL('Add') + '</h2><table id="snapster_add_table">\
                         <tr><td>Описание:</td><td> <input type="text" class="text" id="snapster_add_caption" placeholder="Описание..."></td></tr>\
                         <tr><td>Фильтр:</td><td> <input type="text" class="text" id="snapster_add_filter" placeholder="В формате oid_fid"></td></tr>\
