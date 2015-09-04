@@ -29,6 +29,7 @@
 ## Скриншоты
 
 ![screenshot](https://pp.vk.me/c629405/v629405347/a24e/ysoNuUPWeWM.jpg)<br>
+![adding the photo](https://cloud.githubusercontent.com/assets/2682026/9694031/bcde5aea-535d-11e5-83a5-781b9e569713.jpg)<br>
 ![screenshot](https://pp.vk.me/c629405/v629405347/a23a/X9oF7t4c4ig.jpg)<br>
 ![screenshot](https://pp.vk.me/c629405/v629405347/a214/hNBobnPNHmY.jpg)<br>
 ![screenshot](https://pp.vk.me/c629405/v629405347/a21c/RUMzjbsnnPw.jpg)<br>
