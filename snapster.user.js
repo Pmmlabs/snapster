@@ -132,6 +132,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                         , {section: 'search', title: 'Поиск'}
                         , {section: 'messages', title: 'Сообщения'}
                         , {section: 'add', title: 'Добавить'}
+                        , {section: 'feedback', title: 'Feedback'}
                     );
                     for (var i = 0; i < response.length; i++) {
                         if (response[i].section == 'hashtags')
@@ -368,6 +369,54 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                         vkopt_plugins[PLUGIN_ID].renderPosts(r, new_response);
                     });
                     break;
+                case 'feedback':
+                    dApi.call('chronicle.getFeedback', {
+                        'count': 20,
+                        'start_from': next_from || 0,
+                        'fields': fields
+                    }, function (r, response) {
+                        var profiles = {};  // Более удобный объект с профилями
+                        for (var i = 0, profLen = response.profiles.length; i < profLen; i++)
+                            profiles[response.profiles[i].uid] = response.profiles[i];
+                        var new_response = {items: [], profiles: response.profiles};
+                        for (var i = 0, itemsLen = response.items.length; i < itemsLen; i++) { // Перегруппировка данных для использования функции рендера постов
+                            new_response.items[i] = response.items[i].photo || {};
+                            new_response.items[i].created = response.items[i].date;
+                            switch (response.items[i].type) {
+                                case 'snap_received':
+                                    var profile = profiles[response.items[i].users[0]];
+                                    new_response.items[i].text = 'Входящее от ' +
+                                        '<a class="author" href="/' + profile.screen_name + '">' + profile.first_name + ' ' + profile.last_name + '</a><br/>' +
+                                        new_response.items[i].text;
+                                    break;
+                                case 'snap_sent':
+                                    var profile = profiles[response.items[i].actions[0].user_id];
+                                    new_response.items[i].text = 'Исходящее для ' +
+                                        '<a class="author" href="/' + profile.screen_name + '">' + profile.first_name + ' ' + profile.last_name + '</a> (state: ' + response.items[i].actions[0].state + ')<br/>' +
+                                        new_response.items[i].text;
+                                    new_response.profiles.push({
+                                        uid: response.items[i].photo.owner_id,
+                                        first_name: 'Я',
+                                        last_name: '',
+                                        screen_name: 'id0',
+                                        photo_50: '/images/address_icon.gif'
+                                    });
+                                    break;
+                                case 'follow':
+                                case 'friend_accepted':
+                                    var profile = profiles[response.items[i].users[0]];
+                                    new_response.items[i].owner_id = response.items[i].users[0];
+                                    new_response.items[i].text = 'Новый подписчик: ' +
+                                        '<a class="author" href="/' + profile.screen_name + '">' + profile.first_name + ' ' + profile.last_name + '</a> (type: ' + response.items[i].type + ')';
+                                    break;
+                                default:
+                                    console.log(response.items[i]);
+                                    new_response.items[i].text = 'default! see console!<br/>' + new_response.items[i].text;
+                            }
+                        }
+                        vkopt_plugins[PLUGIN_ID].renderPosts(r, new_response);
+                    });
+                    break;
                 case 'search':  // Поиск
                     if (next_from === undefined) {  // Не подгрузка. Создание поля для ввода поискового запроса.
                         ge('feed_rows').appendChild(vkCe('input', {
@@ -468,7 +517,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                     photo_id: item.owner_id + '_' + item.pid,
                     photoLike_id: item.owner_id + '_photo' + item.pid,
                     text: vkopt_plugins[PLUGIN_ID].processHashtags(item.text),
-                    src_big: item.src_big || item.src,
+                    src_big: item.src_big || item.src || item.src_blur,
                     name_link: '<a class="author" href="/' + profiles[item.owner_id].screen_name + '">' + profiles[item.owner_id].first_name + ' ' + profiles[item.owner_id].last_name + '</a>',
                     date: dateFormat(item.created * 1000, "dd.mm.yyyy HH:MM:ss"),
                     aid: item.aid,
@@ -482,7 +531,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                                                             .replace(/\{place\}/g, item.place || ''):'',
                     comments: comments,
                     filter: item.has_filter ? ' | <a onclick="vkopt_plugins[\''+PLUGIN_ID+'\'].filterInfo('+item.owner_id+','+item.pid+');">О фильтре</a>' : '',
-                    height: item.height * 537 / item.width
+                    height: (item.height || 537) * 537 / (item.width || 537)
                 });
             }
             vkopt_plugins[PLUGIN_ID].afterLoad(response.next_from);
