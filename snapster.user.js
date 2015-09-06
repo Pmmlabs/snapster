@@ -61,7 +61,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                     '</div>'+
                     '<div class="wall_post_text">{text}</div>'+
                     '<div class="page_post_sized_thumbs clear_fix">'+
-                        '<a href="/photo{photo_id}" onclick="return showPhoto(\'{photo_id}\', \'photos{owner_id}\', {}, event);" style="width: 537px; height: {height}px;" class="page_post_thumb_wrap page_post_thumb_last_row fl_l"><img src="{src_big}" width="537" class="page_post_thumb_sized_photo"></a>'+
+                        '<a href="/photo{photo_id}" onclick="return showPhoto(\'{photo_id}\', \'album{owner_id}_{aid}\', {}, event);" style="width: 537px; height: {height}px;" class="page_post_thumb_wrap page_post_thumb_last_row fl_l"><img src="{src_big}" width="537" class="page_post_thumb_sized_photo"></a>'+
                     '</div>{place}' +
                 '</div>'+
                 '<div class="post_full_like_wrap sm fl_r">'+
@@ -341,7 +341,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                     src_big: photo.photo_604 || photo.photo_807 || photo.photo_130 || photo.photo_75,
                                     name_link: '<a class="author" href="/' + profiles[item.source_id].screen_name + '">' + profiles[item.source_id].first_name + ' ' + profiles[item.source_id].last_name + '</a>',
                                     date: dateFormat(photo.date * 1000, "dd.mm.yyyy HH:MM:ss"),
-                                    aid: (photo.album_id+'').replace('-6','0').replace('-7','00').replace('-15','000'),
+                                    aid: ((photo.album_id || '0000')+'').replace('-61','00000').replace('-62','0000').replace('-6','0').replace('-7','00').replace('-15','000'),
                                     likes: photo.likes ? photo.likes.count : '',
                                     mylike: photo.likes && photo.likes.user_likes ? 'my_like' : '',
                                     avatar: profiles[item.source_id].photo_50,
@@ -392,13 +392,13 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                 case 'snap_sent':
                                     var profile = profiles[response.items[i].actions[0].user_id];
                                     new_response.items[i].text = 'Исходящее для ' +
-                                        '<a class="author" href="/' + profile.screen_name + '">' + profile.first_name + ' ' + profile.last_name + '</a> (state: ' + response.items[i].actions[0].state + ')<br/>' +
+                                        '<a class="author" href="/' + profile.screen_name + '">' + profile.first_name + ' ' + profile.last_name + '</a> (' + (response.items[i].actions[0].state == 'view' ? '' : 'не ') + 'прочитано)<br/>' +
                                         new_response.items[i].text;
                                     new_response.profiles.push({
                                         uid: response.items[i].photo.owner_id,
                                         first_name: 'Я',
                                         last_name: '',
-                                        screen_name: 'id0',
+                                        screen_name: 'id'+vk.id,
                                         photo_50: '/images/address_icon.gif'
                                     });
                                     break;
@@ -441,7 +441,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                 case 'add': //Добавить
                     if (vVersion < 232)
                         vkMsg("Добавление фотографий возможно только при использовании VkOpt версии 2.3.2 и выше", 7000);
-                    var html = '<h2>' + IDL('Add') + '</h2><table id="snapster_add_table">\
+                    var html = '<h2>' + IDL('add') + '</h2><table id="snapster_add_table">\
                         <tr><td>Описание:</td><td> <input type="text" class="text" id="snapster_add_caption" placeholder="Описание..."></td></tr>\
                         <tr><td>Фильтр:</td><td> <input type="text" class="text" id="snapster_add_filter" placeholder="В формате oid_fid"></td></tr>\
                         <tr><td>Получатели:</td><td> <input type="text" class="text" id="snapster_add_message" placeholder="id через запятую (для отправки личным сообщением)"></td></tr>\
@@ -520,7 +520,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                     src_big: item.src_big || item.src || item.src_blur,
                     name_link: '<a class="author" href="/' + profiles[item.owner_id].screen_name + '">' + profiles[item.owner_id].first_name + ' ' + profiles[item.owner_id].last_name + '</a>',
                     date: dateFormat(item.created * 1000, "dd.mm.yyyy HH:MM:ss"),
-                    aid: item.aid,
+                    aid: ((item.aid || '0000')+'').replace('-61','00000').replace('-62','0000').replace('-6','0').replace('-7','00').replace('-15','000'),
                     likes: item.likes ? item.likes.count : '',
                     mylike: item.likes && item.likes.user_likes ? 'my_like' : '',
                     avatar: profiles[item.owner_id].photo_50,
