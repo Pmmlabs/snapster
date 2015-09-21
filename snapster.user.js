@@ -132,7 +132,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                         , {section: 'search', title: 'Поиск'}
                         , {section: 'messages', title: 'Сообщения'}
                         , {section: 'add', title: 'Добавить'}
-                        , {section: 'feedback', title: 'Feedback'}
+                        , {section: 'feedback', title: 'Оповещения'}
                     );
                     for (var i = 0; i < response.length; i++) {
                         if (response[i].section == 'hashtags')
