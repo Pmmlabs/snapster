@@ -406,6 +406,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                 case 'friend_accepted':
                                     var profile = profiles[response.items[i].users[0]];
                                     new_response.items[i].owner_id = response.items[i].users[0];
+                                    new_response.items[i].height = 1;
                                     new_response.items[i].text = 'Новый подписчик: ' +
                                         '<a class="author" href="/' + profile.screen_name + '">' + profile.first_name + ' ' + profile.last_name + '</a> (type: ' + response.items[i].type + ')';
                                     break;
