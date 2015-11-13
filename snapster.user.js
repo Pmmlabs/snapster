@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             Snapster@vkopt
 // @name           Snapster plugin for VkOpt
-// @version        1.1
+// @version        1.2
 // @namespace      https://greasyfork.org/users/23
 // @author         Pmmlabs@github
 // @description    Плагин для VkOpt, добавляющий на сайт ВКонтакте веб-клиент Snapster
@@ -61,7 +61,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                     '</div>'+
                     '<div class="wall_post_text">{text}</div>'+
                     '<div class="page_post_sized_thumbs clear_fix">'+
-                        '<a href="/photo{photo_id}" onclick="return showPhoto(\'{photo_id}\', \'album{owner_id}_{aid}\', {}, event);" style="width: 537px; height: {height}px;" class="page_post_thumb_wrap page_post_thumb_last_row fl_l"><img src="{src_big}" width="537" class="page_post_thumb_sized_photo"></a>'+
+                        '<a href="/photo{photo_id}" onclick="return showPhoto(\'{photo_id}\', \'album{owner_id}_{aid}\', {}, event);" style="width: 537px; height: {height}px;" class="page_post_thumb_wrap page_post_thumb_last_row fl_l"><img src="{src_big}" width="{width}" class="page_post_thumb_sized_photo"></a>'+
                     '</div>{place}' +
                 '</div>'+
                 '<div class="post_full_like_wrap sm fl_r">'+
@@ -237,7 +237,8 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                         '\');">' + this.hashtags[i].hashtag + '</a>',
                                 aid: 0,
                                 avatar: '/images/chronicle/icon_' + (i % 5 + 1) + '.png', // В качестве аватара - картинка из набора иконок snapster
-                                height: this.hashtags[i].photo.height * 537 / this.hashtags[i].photo.width
+                                height: this.hashtags[i].photo.height * 537 / this.hashtags[i].photo.width,
+                                width: 537
                             });
                         }
                         this.afterLoad('');
@@ -296,7 +297,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                     avatar: item.photo_50,
                                     friend_status: item.friend_status ? '<span class="explain">('+vkopt_plugins[PLUGIN_ID].friend_statuses[item.friend_status]+')</span>' : '',
                                     verified: item.verified ? '<span class="vk_profile_verified"></span>' : '',
-                                    height: 537
+                                    height: 300
                             });
                         }
                         vkopt_plugins[PLUGIN_ID].afterLoad(response.next_from);
@@ -350,7 +351,8 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                                                             .replace(/\{long\}/g, photo.long)
                                                                             .replace(/\{place\}/g, photo.place || ''):'',
                                     filter: photo.has_filter ? ' | <a onclick="vkopt_plugins[\'' + PLUGIN_ID + '\'].filterInfo(' + photo.owner_id + ',' + photo.id + ');">О фильтре</a>' : '',
-                                    height: photo.height * 537 / photo.width
+                                    height: photo.height * 537 / photo.width,
+                                    width: 537
                                 });
                             }
                         }
@@ -409,6 +411,19 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                     new_response.items[i].height = 1;
                                     new_response.items[i].text = 'Новый подписчик: ' +
                                         '<a class="author" href="/' + profile.screen_name + '">' + profile.first_name + ' ' + profile.last_name + '</a> (type: ' + response.items[i].type + ')';
+                                    break;
+                                case 'comment_photo':
+                                    new_response.items[i].owner_id = response.items[i].feedback_comment.from_id
+                                        || response.items[i].feedback_comment.owner_id
+                                        || response.items[i].feedback_comment.uid;
+                                    new_response.items[i].width_override = 100;
+                                    new_response.items[i].text = response.items[i].feedback_comment.text;
+                                    break;
+                                case 'like_photo':
+                                    var profile = profiles[response.items[i].users[0]];
+                                    new_response.items[i].text = 'Лайк от ' +
+                                        '<a class="author" href="/' + profile.screen_name + '">' + profile.first_name + ' ' + profile.last_name + '</a><br/>';
+                                    new_response.items[i].width_override = 100;
                                     break;
                                 default:
                                     console.log(response.items[i]);
@@ -532,7 +547,8 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                                                             .replace(/\{place\}/g, item.place || ''):'',
                     comments: comments,
                     filter: item.has_filter ? ' | <a onclick="vkopt_plugins[\''+PLUGIN_ID+'\'].filterInfo('+item.owner_id+','+item.pid+');">О фильтре</a>' : '',
-                    height: (item.height || 537) * 537 / (item.width || 537)
+                    height: (item.height || 537) * (item.width_override || 537) / (item.width || 537),
+                    width: item.width_override || 537
                 });
             }
             vkopt_plugins[PLUGIN_ID].afterLoad(response.next_from);
