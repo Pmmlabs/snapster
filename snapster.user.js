@@ -1,7 +1,7 @@
 // ==UserScript==
 // @id             Snapster@vkopt
 // @name           Snapster plugin for VkOpt
-// @version        1.2
+// @version        1.3
 // @namespace      https://greasyfork.org/users/23
 // @author         Pmmlabs@github
 // @description    Плагин для VkOpt, добавляющий на сайт ВКонтакте веб-клиент Snapster
@@ -339,7 +339,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                     photo_id: photo.owner_id + '_' + photo.id,
                                     photoLike_id: photo.owner_id + '_photo' + photo.id,
                                     text: vkopt_plugins[PLUGIN_ID].processHashtags(photo.text),
-                                    src_big: photo.photo_604 || photo.photo_807 || photo.photo_130 || photo.photo_75,
+                                    src_big: photo.sizes[photo.sizes.length-1].src,
                                     name_link: '<a class="author" href="/' + profiles[item.source_id].screen_name + '">' + profiles[item.source_id].first_name + ' ' + profiles[item.source_id].last_name + '</a>',
                                     date: dateFormat(photo.date * 1000, "dd.mm.yyyy HH:MM:ss"),
                                     aid: ((photo.album_id || '0000')+'').replace('-61','00000').replace('-62','0000').replace('-6','0').replace('-7','00').replace('-15','000'),
@@ -351,7 +351,7 @@ if (!window.vkopt_plugins) vkopt_plugins={};
                                                                             .replace(/\{long\}/g, photo.long)
                                                                             .replace(/\{place\}/g, photo.place || ''):'',
                                     filter: photo.has_filter ? ' | <a onclick="vkopt_plugins[\'' + PLUGIN_ID + '\'].filterInfo(' + photo.owner_id + ',' + photo.id + ');">О фильтре</a>' : '',
-                                    height: photo.height * 537 / photo.width,
+                                    height: photo.sizes[photo.sizes.length-1].height * 537 / photo.sizes[photo.sizes.length-1].width,
                                     width: 537
                                 });
                             }
